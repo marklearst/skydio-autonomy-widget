@@ -1,0 +1,1 @@
+// for responsive rendering, optional useMediaQuery wrapper
