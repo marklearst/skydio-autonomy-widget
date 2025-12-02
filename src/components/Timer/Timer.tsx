@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react'
+import { useTimer } from '../../hooks'
+import { formatTime } from '../../utils'
 
 export interface TimerProps {
   duration?: number
@@ -15,53 +16,12 @@ const Timer: React.FC<TimerProps> = ({
   state = 'running',
   onComplete,
 }) => {
-  const [remaining, setRemaining] = useState(duration ?? 0)
-  const intervalRef = useRef<NodeJS.Timeout | null>(null)
-
-  // Sync duration prop
-  useEffect(() => {
-    if (typeof duration === 'number') {
-      setRemaining(duration)
-    }
-  }, [duration])
-
-  // Countdown effect
-  useEffect(() => {
-    if (state === 'running' && typeof duration === 'number' && remaining > 0) {
-      intervalRef.current = setInterval(() => {
-        setRemaining((r) => {
-          if (r <= 1) {
-            clearInterval(intervalRef.current!)
-            if (onComplete) onComplete()
-            return 0
-          }
-          return r - 1
-        })
-      }, 1000)
-    } else {
-      if (intervalRef.current) clearInterval(intervalRef.current)
-    }
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current)
-    }
-  }, [state, duration, onComplete, remaining])
-
-  // Format seconds as mm:ss
-  function formatTime(sec: number): string {
-    const m = Math.floor(sec / 60)
-    const s = sec % 60
-    return `${m}:${s.toString().padStart(2, '0')}`
-  }
-
-  // Progress calculation (remaining / duration, clamped 0-1)
-  let progress = 1
-  if (typeof duration === 'number' && duration > 0) {
-    progress = remaining / duration
-  }
-  if (typeof progressOverride === 'number') {
-    progress = progressOverride
-  }
-  progress = Math.max(0, Math.min(1, progress))
+  const { remaining, progress } = useTimer({
+    duration,
+    state,
+    onComplete,
+    progressOverride,
+  })
 
   // SVG constants
   const size = 32 // px

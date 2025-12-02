@@ -10,7 +10,7 @@ const meta: Meta<typeof IconButton> = {
 export default meta
 type Story = StoryObj<typeof IconButton>
 
-export const Default: Story = {
+export const Play: Story = {
   args: {
     icon: 'Play',
     ariaLabel: 'Play',
@@ -19,7 +19,7 @@ export const Default: Story = {
   },
 }
 
-export const Danger: Story = {
+export const Stop: Story = {
   args: {
     icon: 'StopSign',
     ariaLabel: 'Stop',
@@ -28,7 +28,7 @@ export const Danger: Story = {
   },
 }
 
-export const Primary: Story = {
+export const Camera: Story = {
   args: {
     icon: 'CameraViewfinder',
     ariaLabel: 'Camera',
@@ -55,7 +55,7 @@ export const Collapse: Story = {
   },
 }
 
-export const LargeFlex: Story = {
+export const Route: Story = {
   args: {
     icon: 'Route',
     ariaLabel: 'Route',
