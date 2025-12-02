@@ -3,7 +3,7 @@ export interface StatusMessageProps {
 }
 
 export const StatusMessage: React.FC<StatusMessageProps> = ({ message }) => (
-  <div className="font-sf font-semibold text-sm leading-5 text-white">
+  <div className="!text-white !font-sans !font-semibold text-[14px] leading-[20px] truncate overflow-ellipsis overflow-hidden whitespace-nowrap max-w-full">
     {message}
   </div>
 )

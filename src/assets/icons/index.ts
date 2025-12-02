@@ -1,13 +1,36 @@
-import type { FC, SVGProps } from 'react';
+import type { FC, SVGProps } from 'react'
 
-export { ReactComponent as ArrowTurnDownLeft } from './ArrowTurnDownLeft.svg';
-export { ReactComponent as CameraViewfinder } from './CameraViewfinder.svg';
-export { ReactComponent as Play } from './Play.svg';
-export { ReactComponent as Caret } from './Caret.svg';
-export { ReactComponent as Route } from './Route.svg';
-export { ReactComponent as StopSign } from './StopSign.svg';
-export { ReactComponent as XmarkLarge } from './XmarkLarge.svg';
+// Import each icon for the Icons object using SVGR React component syntax
+import ArrowLeftIcon from './ArrowLeftIcon.svg?react'
+import CameraIcon from './CameraIcon.svg?react'
+import PlayIcon from './PlayIcon.svg?react'
+import CaretIcon from './CaretIcon.svg?react'
+import RouteIcon from './RouteIcon.svg?react'
+import StopIcon from './StopIcon.svg?react'
+import XIcon from './XIcon.svg?react'
 
-export type IconComponentType = FC<SVGProps<SVGSVGElement>>;
+// Export icons individually if you want
+export {
+  ArrowLeftIcon,
+  CameraIcon,
+  PlayIcon,
+  CaretIcon,
+  RouteIcon,
+  StopIcon,
+  XIcon,
+}
 
-export type IconName = keyof typeof import('./index');
+// Export a single Icons object
+export const Icons = {
+  ArrowLeftIcon,
+  CameraIcon,
+  PlayIcon,
+  CaretIcon,
+  RouteIcon,
+  StopIcon,
+  XIcon,
+} as const
+
+export type IconName = keyof typeof Icons
+
+export type IconComponentType = FC<SVGProps<SVGSVGElement>>

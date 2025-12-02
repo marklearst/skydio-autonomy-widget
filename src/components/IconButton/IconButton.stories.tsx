@@ -12,34 +12,34 @@ type Story = StoryObj<typeof IconButton>
 
 export const Play: Story = {
   args: {
-    icon: 'Play',
+    icon: 'PlayIcon',
     ariaLabel: 'Play',
-    variant: 'default',
+    variant: 'play',
     size: 32,
   },
 }
 
 export const Stop: Story = {
   args: {
-    icon: 'StopSign',
+    icon: 'StopIcon',
     ariaLabel: 'Stop',
-    variant: 'danger',
+    variant: 'stop',
     size: 32,
   },
 }
 
 export const Camera: Story = {
   args: {
-    icon: 'CameraViewfinder',
+    icon: 'CameraIcon',
     ariaLabel: 'Camera',
-    variant: 'primary',
+    variant: 'action',
     size: 32,
   },
 }
 
 export const Expand: Story = {
   args: {
-    icon: 'Caret',
+    icon: 'CaretIcon',
     ariaLabel: 'Expand',
     variant: 'default',
     size: 32,
@@ -48,18 +48,18 @@ export const Expand: Story = {
 
 export const Collapse: Story = {
   args: {
-    icon: 'ArrowTurnDownLeft',
+    icon: 'ArrowLeftIcon',
     ariaLabel: 'Collapse',
-    variant: 'default',
+    variant: 'action',
     size: 32,
   },
 }
 
 export const Route: Story = {
   args: {
-    icon: 'Route',
+    icon: 'RouteIcon',
     ariaLabel: 'Route',
-    variant: 'primary',
+    variant: 'default',
     size: 50,
     flex: true,
   },
@@ -68,46 +68,46 @@ export const Route: Story = {
 export const AllVariants = () => (
   <div className="flex flex-wrap gap-4">
     <IconButton
-      icon="Play"
+      icon="PlayIcon"
       ariaLabel="Play"
-      variant="default"
+      variant="play"
       size={32}
     />
     <IconButton
-      icon="StopSign"
+      icon="StopIcon"
       ariaLabel="Stop"
-      variant="danger"
+      variant="stop"
       size={32}
     />
     <IconButton
-      icon="CameraViewfinder"
+      icon="CameraIcon"
       ariaLabel="Camera"
-      variant="primary"
+      variant="action"
       size={32}
     />
     <IconButton
-      icon="Caret"
+      icon="CaretIcon"
       ariaLabel="Expand"
       variant="default"
       size={32}
     />
     <IconButton
-      icon="ArrowTurnDownLeft"
+      icon="ArrowLeftIcon"
       ariaLabel="Collapse"
-      variant="default"
+      variant="action"
       size={32}
     />
     <IconButton
-      icon="Route"
+      icon="RouteIcon"
       ariaLabel="Route"
-      variant="primary"
+      variant="action"
       size={50}
       flex
     />
     <IconButton
-      icon="XmarkLarge"
+      icon="XIcon"
       ariaLabel="Close"
-      variant="danger"
+      variant="action"
       size={32}
     />
   </div>
