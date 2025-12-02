@@ -1,1 +1,1 @@
-export { default } from './ActionControls';
+export * from './ActionControls';

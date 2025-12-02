@@ -3,7 +3,9 @@ export interface StatusMessageProps {
 }
 
 export const StatusMessage: React.FC<StatusMessageProps> = ({ message }) => (
-  <div className="flex items-center gap-2 bg-gray-900 p-2">{message}</div>
+  <div className="font-sf font-semibold text-sm leading-5 text-white">
+    {message}
+  </div>
 )
 
 export default StatusMessage

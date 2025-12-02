@@ -1,7 +1,13 @@
-export { default as ArrowTurnDownLeft } from './ArrowTurnDownLeft.svg'
-export { default as CameraViewfinder } from './CameraViewfinder.svg'
-export { default as Play } from './Play.svg'
-export { default as Caret } from './Caret.svg'
-export { default as Route } from './Route.svg'
-export { default as StopSign } from './StopSign.svg'
-export { default as XmarkLarge } from './XmarkLarge.svg'
+import type { FC, SVGProps } from 'react';
+
+export { ReactComponent as ArrowTurnDownLeft } from './ArrowTurnDownLeft.svg';
+export { ReactComponent as CameraViewfinder } from './CameraViewfinder.svg';
+export { ReactComponent as Play } from './Play.svg';
+export { ReactComponent as Caret } from './Caret.svg';
+export { ReactComponent as Route } from './Route.svg';
+export { ReactComponent as StopSign } from './StopSign.svg';
+export { ReactComponent as XmarkLarge } from './XmarkLarge.svg';
+
+export type IconComponentType = FC<SVGProps<SVGSVGElement>>;
+
+export type IconName = keyof typeof import('./index');

@@ -73,9 +73,9 @@ const Timer: React.FC<TimerProps> = ({
 
   // Color logic
   let ringColor = '#fff'
-  if (state === 'paused') ringColor = '#fff'
-  else if (progress <= 0.1) ringColor = '#ff3b30'
-  else if (progress <= 0.5) ringColor = '#ffd600'
+  if (state === 'paused') ringColor = '#666666'
+  // else if (progress <= 0.1) ringColor = '#ff3b30'
+  // else if (progress <= 0.5) ringColor = '#ffd600'
 
   const display = formatTime(remaining)
 

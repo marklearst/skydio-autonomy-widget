@@ -1,1 +1,1 @@
-export { default } from './StatusMessage';
+export * from './StatusMessage';

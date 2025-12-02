@@ -1,1 +1,1 @@
-export { default } from './ActionWidget';
+export * from './ActionWidget';

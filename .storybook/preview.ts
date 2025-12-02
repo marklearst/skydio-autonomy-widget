@@ -14,7 +14,19 @@ const preview: Preview = {
       // 'error' - fail CI on a11y violations
       // 'off' - skip a11y checks entirely
       test: 'todo'
-    }
+    },
+    backgrounds: {
+      default: 'black',
+      values: [
+        { name: 'black', value: '#000000' },
+        { name: 'light', value: '#ffffff' },
+        // Add more if needed
+      ],
+    },
+  },
+  initialGlobals: {
+    // 👇 Set the initial background color
+    backgrounds: { value: 'black' },
   },
 };
 
