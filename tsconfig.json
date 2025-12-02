@@ -4,9 +4,7 @@
     "outDir": "dist",
     "declaration": true, // Only if you want .d.ts files (usually for libraries)
     "declarationDir": "dist/types", // Optional: keep .d.ts files separate
-    // ...other options
   },
-  // "include": ["src"],
   "files": [],
   "references": [
     { "path": "./tsconfig.app.json" },
