@@ -1,1 +1,4 @@
 /* @tailwind overrides */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
