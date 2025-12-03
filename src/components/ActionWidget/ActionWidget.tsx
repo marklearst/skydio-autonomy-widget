@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import Timer from '../Timer/Timer'
 import { IconButton } from '../IconButton/IconButton'
 import ActionControls from '../ActionControls/ActionControls'
@@ -18,44 +19,46 @@ const ActionWidget: React.FC<ActionWidgetProps> = ({
   actionName,
   time,
   isPaused = false,
-  expanded = false,
   onPause = () => {},
   onResume = () => {},
-  onExpand = () => {},
-  onCollapse = () => {},
 }) => {
+  // Local state for expand/collapse
+  const [expanded, setExpanded] = useState(false)
+
   return (
-    <div className="w-full max-w-[420px] bg-gray-900 rounded-xl shadow-lg p-4 flex flex-col items-stretch">
-      {/* Top Row */}
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2 min-w-[80px]">
+    <div className={`action-widget-base ${expanded ? 'h-[88px]' : 'h-[48px]'}`}>
+      {/* Top row: left/right groups */}
+      <div className="flex justify-between items-center w-full px-2 py-2">
+        {/* Left group */}
+        <div className="flex items-center gap-2">
           <Timer
             duration={time}
             state={isPaused ? 'paused' : 'running'}
           />
-        </div>
-        <div className="flex-1">
           <StatusMessage message={actionName} />
         </div>
-        <IconButton
-          icon={expanded ? 'CaretIcon' : 'CaretIcon'}
-          ariaLabel={expanded ? 'Collapse controls' : 'Expand controls'}
-          onClick={expanded ? onCollapse : onExpand}
-          className={`transition-transform ${expanded ? '' : 'rotate-180'}`}
-          variant="default"
-          size={32}
-        />
-        <IconButton
-          icon={isPaused ? 'PlayIcon' : 'StopIcon'}
-          ariaLabel={isPaused ? 'Resume' : 'Pause'}
-          onClick={isPaused ? onResume : onPause}
-          variant={isPaused ? 'stop' : 'play'}
-          size={32}
-        />
+        {/* Right group */}
+        <div className="flex items-center gap-2">
+          <IconButton
+            icon="CaretIcon"
+            ariaLabel={expanded ? 'Collapse controls' : 'Expand controls'}
+            onClick={() => setExpanded((prev) => !prev)}
+            className={`transition-transform ${expanded ? '' : 'rotate-180'}`}
+            variant="default"
+            size={32}
+          />
+          <IconButton
+            icon={isPaused ? 'PlayIcon' : 'StopIcon'}
+            ariaLabel={isPaused ? 'Resume' : 'Pause'}
+            onClick={isPaused ? onResume : onPause}
+            variant={isPaused ? 'stop' : 'play'}
+            size={32}
+          />
+        </div>
       </div>
       {/* Action Controls Row */}
       {expanded && (
-        <div className="mt-3">
+        <div className="mt-2 px-2 pb-2 w-full">
           <ActionControls />
         </div>
       )}
