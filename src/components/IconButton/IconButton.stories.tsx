@@ -41,7 +41,7 @@ export const Expand: Story = {
   args: {
     icon: 'CaretIcon',
     ariaLabel: 'Expand',
-    variant: 'default',
+    variant: 'caret',
     size: 32,
   },
 }
@@ -88,7 +88,7 @@ export const AllVariants = () => (
     <IconButton
       icon="CaretIcon"
       ariaLabel="Expand"
-      variant="default"
+      variant="caret"
       size={32}
     />
     <IconButton

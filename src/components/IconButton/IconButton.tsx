@@ -2,7 +2,7 @@ import React from 'react'
 import * as Icons from '../../assets/icons'
 import type { IconName, IconComponentType } from '../../assets/icons'
 
-export type IconButtonVariant = 'default' | 'stop' | 'play' | 'action'
+export type IconButtonVariant = 'default' | 'stop' | 'play' | 'action' | 'caret'
 export type IconButtonSize = 32 | 50
 
 export interface IconButtonProps {
@@ -17,10 +17,11 @@ export interface IconButtonProps {
 }
 
 const variantClasses: Record<IconButtonVariant, string> = {
-  default: 'bg-transparent hover:bg-gray-400',
+  default: 'bg-transparent hover:bg-transparent',
   play: 'bg-[#941920] hover:bg-[#7a1620]',
   stop: 'bg-[#0066CC] hover:bg-[#005bb5]',
   action: 'bg-[#4D4D4D] hover:bg-[#343434]',
+  caret: 'bg-transparent hover:bg-transparent',
 }
 
 /**
@@ -40,7 +41,6 @@ export const IconButton: React.FC<IconButtonProps> = ({
   disabled = false,
 }) => {
   const IconComponent = Icons[icon] as unknown as IconComponentType
-  console.trace('IconComponent: ', IconComponent)
 
   if (!IconComponent) {
     console.warn(`Icon "${icon}" not found in icons barrel.`)
