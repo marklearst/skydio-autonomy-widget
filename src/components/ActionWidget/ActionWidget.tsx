@@ -7,10 +7,7 @@ import StatusMessage from '../StatusMessage/StatusMessage'
 export interface ActionWidgetProps {
   actionName: string
   time: number
-  isPaused?: boolean
   expanded?: boolean
-  onPause?: () => void
-  onResume?: () => void
   onExpand?: () => void
   onCollapse?: () => void
 }
@@ -18,12 +15,11 @@ export interface ActionWidgetProps {
 const ActionWidget: React.FC<ActionWidgetProps> = ({
   actionName,
   time,
-  isPaused = false,
-  onPause = () => {},
-  onResume = () => {},
+  // Remove isPaused, onPause, onResume from props if not needed externally
 }) => {
   // Local state for expand/collapse
   const [expanded, setExpanded] = useState(false)
+  const [isPaused, setIsPaused] = useState(false)
 
   return (
     <div className={`action-widget-base ${expanded ? 'h-[88px]' : 'h-[48px]'}`}>
@@ -49,9 +45,9 @@ const ActionWidget: React.FC<ActionWidgetProps> = ({
           />
           <IconButton
             icon={isPaused ? 'PlayIcon' : 'StopIcon'}
-            ariaLabel={isPaused ? 'Resume' : 'Pause'}
-            onClick={isPaused ? onResume : onPause}
-            variant={isPaused ? 'stop' : 'play'}
+            ariaLabel={isPaused ? 'Play' : 'Pause'}
+            onClick={() => setIsPaused((prev) => !prev)}
+            variant={isPaused ? 'play' : 'stop'}
             size={32}
           />
         </div>

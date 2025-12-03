@@ -18,8 +18,8 @@ export interface IconButtonProps {
 
 const variantClasses: Record<IconButtonVariant, string> = {
   default: 'bg-transparent hover:bg-transparent',
-  play: 'bg-[#941920] hover:bg-[#7a1620]',
-  stop: 'bg-[#0066CC] hover:bg-[#005bb5]',
+  play: 'bg-[#0066CC] hover:bg-[#005bb5]',
+  stop: 'bg-[#941920] hover:bg-[#7a1620]',
   action: 'bg-[#4D4D4D] hover:bg-[#343434]',
   caret: 'bg-transparent hover:bg-transparent',
 }
