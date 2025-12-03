@@ -70,6 +70,28 @@ import { PlayIcon } from './assets/icons'
 
 ---
 
+## 🎨 Tailwind CSS
+
+This project leverages the full power of [Tailwind CSS](https://tailwindcss.com/) for all styling, layout, and design system implementation. Our setup combines the core `tailwindcss` framework with the official [`@tailwindcss/vite`](https://tailwindcss.com/docs/guides/vite) plugin, ensuring lightning-fast builds, instant hot-reloading, and seamless integration with Vite and Storybook.
+
+- **Atomic Design Tokens:**
+  - All colors, spacing, typography, and radii are managed via Tailwind's config and extended in `src/styles/theme.ts` for consistency and rapid theming.
+- **Utility-First Workflow:**
+  - Components are styled exclusively with Tailwind utility classes, ensuring a scalable and maintainable UI foundation.
+- **Zero Custom CSS:**
+  - No custom CSS is written except for global resets or rare edge cases. All visual rules are encoded in Tailwind for clarity and portability.
+- **Storybook Integration:**
+  - Tailwind is fully loaded in Storybook via `.storybook/preview.ts` for pixel-perfect component previews and documentation.
+- **Best Practices:**
+  - Responsive, state, and dark mode variants are used throughout for robust, accessible, and adaptive UI.
+  - All new components and UI states are built and documented using Tailwind conventions.
+
+> **Why Tailwind?**
+>
+> Tailwind CSS enables rapid prototyping, strict design system adherence, and effortless scaling from MVP to enterprise. By codifying design tokens and using atomic utilities, we ensure every pixel is intentional and every component is consistent—no matter how complex the UI becomes.
+
+---
+
 ## 🛠 Linting & Formatting
 
 - ESLint with TypeScript and React rules.
