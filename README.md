@@ -18,14 +18,33 @@ src/
   components/
     ActionWidget/         # Main widget, handles layout and responsive state
     Timer/                # Countdown ring, supports label/icon swap
-    IconButton/           # All-purpose action button
+    IconButton/           # All-purpose action button, uses named icons
     ActionControls/       # Row of control buttons (desktop only)
     StatusMessage/        # Status text/message component
   hooks/                  # Custom hooks (breakpoint, timer logic)
   utils/                  # Shared utilities (e.g. time formatting)
-  assets/                 # SVG/React icons
+  assets/
+    icons/                # SVG icons (named e.g. PlayIcon.svg), imported as React components via SVGR
+    # other assets (images, fonts)
   styles/                 # Tailwind, tokens, and theme files
   types/                  # Shared TS types/interfaces
+```
+
+## Barrel Architecture
+
+This project uses a barrel architecture pattern for module organization. Each major directory (e.g., `components/`, `hooks/`, `utils/`, `assets/icons/`) contains an `index.ts` file that re-exports all public modules, components, or assets in that directory. This approach:
+
+- Simplifies imports throughout the codebase
+- Promotes encapsulation and modularity
+- Makes it easy to update, refactor, or swap implementations
+
+**Example:**
+```ts
+// Importing a component from the barrel
+import { IconButton } from './components/IconButton'
+
+// Importing an icon from the icons barrel
+import { PlayIcon } from './assets/icons'
 ```
 
 ## 🚀 Getting Started
