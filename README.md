@@ -92,6 +92,25 @@ This project leverages the full power of [Tailwind CSS](https://tailwindcss.com/
 
 ---
 
+## 📚 Storybook v9
+
+This project uses [Storybook v9](https://storybook.js.org/) as the single source of truth for component documentation, design review, and UI state validation.
+
+- **Vite Integration:**
+  - Storybook is configured to run with Vite for fast builds and instant feedback.
+- **Tailwind Support:**
+  - All Tailwind CSS styles are loaded in Storybook for perfect design fidelity.
+- **Component-Driven:**
+  - Every UI component and key state is documented as a Storybook story, supporting rapid prototyping and stakeholder review.
+- **Accessibility & Testing:**
+  - Addons like `@storybook/addon-a11y` and `@storybook/addon-vitest` are included for accessibility checks and interactive testing.
+
+> **Why Storybook?**
+>
+> Storybook enables scalable, collaborative UI development. Designers, engineers, and PMs can all review and validate components in isolation, ensuring quality and consistency before integration.
+
+---
+
 ## 🛠 Linting & Formatting
 
 - ESLint with TypeScript and React rules.
