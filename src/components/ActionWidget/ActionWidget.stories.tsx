@@ -13,26 +13,36 @@ type Story = StoryObj<typeof ActionWidget>
 export const Running: Story = {
   args: {
     actionName: 'Flying to Point 1',
-    time: 407, // 6:47 in seconds
+    time: 407, // 6:47 in seconds,
     isPaused: false,
-    expanded: false,
   },
+  render: (args, { updateArgs }) => (
+    <ActionWidget
+      {...args}
+      onPauseChange={(paused) => updateArgs({ isPaused: paused })}
+      onActionNameChange={(name) => updateArgs({ actionName: name })}
+    />
+  ),
 }
 
 export const Paused: Story = {
   args: {
     actionName: 'Mission Paused',
-    time: 407, // 6:47 in seconds
+    time: 407, // 6:47 in seconds,
     isPaused: true,
-    expanded: false,
   },
+  render: (args, { updateArgs }) => (
+    <ActionWidget
+      {...args}
+      onPauseChange={(paused) => updateArgs({ isPaused: paused })}
+      onActionNameChange={(name) => updateArgs({ actionName: name })}
+    />
+  ),
 }
 
 export const Expanded: Story = {
   args: {
     actionName: 'Flying to Point 1',
     time: 407, // 6:47 in seconds
-    isPaused: false,
-    expanded: true,
   },
 }

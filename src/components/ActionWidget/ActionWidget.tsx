@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Timer from '../Timer/Timer'
 import { IconButton } from '../IconButton/IconButton'
 import ActionControls from '../ActionControls/ActionControls'
@@ -8,18 +8,51 @@ export interface ActionWidgetProps {
   actionName: string
   time: number
   expanded?: boolean
-  onExpand?: () => void
-  onCollapse?: () => void
+  isPaused?: boolean
+  onPauseChange?: (paused: boolean) => void
+  onActionNameChange?: (actionName: string) => void
 }
 
 const ActionWidget: React.FC<ActionWidgetProps> = ({
   actionName,
   time,
-  // Remove isPaused, onPause, onResume from props if not needed externally
+  expanded: expandedProp,
+  isPaused: isPausedProp,
+  onPauseChange,
+  onActionNameChange,
 }) => {
   // Local state for expand/collapse
-  const [expanded, setExpanded] = useState(false)
-  const [isPaused, setIsPaused] = useState(false)
+  const [expanded, setExpanded] = useState(expandedProp ?? false)
+  const [internalPaused, setInternalPaused] = useState(isPausedProp ?? false)
+  const [internalActionName, setInternalActionName] = useState(actionName)
+
+  // Sync internal state with props for Storybook/controlled usage
+  useEffect(() => {
+    setInternalPaused(isPausedProp ?? false)
+  }, [isPausedProp])
+  useEffect(() => {
+    setInternalActionName(actionName)
+  }, [actionName])
+
+  // Controlled or uncontrolled
+  const isPaused = isPausedProp !== undefined ? isPausedProp : internalPaused
+  const currentActionName = isPaused ? 'Mission Paused' : internalActionName
+
+  const handlePauseToggle = () => {
+    if (isPausedProp !== undefined && onPauseChange) {
+      onPauseChange(!isPausedProp)
+      if (onActionNameChange) {
+        onActionNameChange(!isPausedProp ? 'Mission Paused' : actionName)
+      }
+    } else {
+      setInternalPaused((prev) => {
+        const next = !prev
+        if (next && onActionNameChange) setInternalActionName('Mission Paused')
+        else if (onActionNameChange) setInternalActionName(actionName)
+        return next
+      })
+    }
+  }
 
   return (
     <div className={`action-widget-base ${expanded ? 'h-[88px]' : 'h-[48px]'}`}>
@@ -31,7 +64,7 @@ const ActionWidget: React.FC<ActionWidgetProps> = ({
             duration={time}
             state={isPaused ? 'paused' : 'running'}
           />
-          <StatusMessage message={actionName} />
+          <StatusMessage message={currentActionName} />
         </div>
         {/* Right group */}
         <div className="flex items-center gap-2">
@@ -46,7 +79,7 @@ const ActionWidget: React.FC<ActionWidgetProps> = ({
           <IconButton
             icon={isPaused ? 'PlayIcon' : 'StopIcon'}
             ariaLabel={isPaused ? 'Play' : 'Pause'}
-            onClick={() => setIsPaused((prev) => !prev)}
+            onClick={handlePauseToggle}
             variant={isPaused ? 'play' : 'stop'}
             size={32}
           />
@@ -54,7 +87,7 @@ const ActionWidget: React.FC<ActionWidgetProps> = ({
       </div>
       {/* Action Controls Row */}
       {expanded && (
-        <div className="mt-2 px-2 pb-2 w-full">
+        <div className="px-2 w-full">
           <ActionControls />
         </div>
       )}
