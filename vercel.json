@@ -1,0 +1,4 @@
+{
+  "outputDirectory": "storybook-static",
+  "buildCommand": "pnpm run build-storybook"
+}
