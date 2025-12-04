@@ -4,6 +4,17 @@ import type { Preview } from '@storybook/react-vite'
 
 const preview: Preview = {
   parameters: {
+    options: {
+      storySort: {
+        order: [
+          'ActionWidget',
+          'ActionControls',
+          'IconButton',
+          'Timer',
+          'StatusMessage',
+        ],
+      },
+    },
     controls: {
       matchers: {
         color: /(background|color)$/i,
@@ -18,17 +29,12 @@ const preview: Preview = {
       test: 'todo',
     },
     backgrounds: {
-      default: 'black',
+      default: 'dark',
       values: [
-        { name: 'black', value: '#000000' },
+        { name: 'dark', value: '#222831' },
         { name: 'light', value: '#ffffff' },
-        // Add more if needed
       ],
     },
-  },
-  initialGlobals: {
-    // 👇 Set the initial background color
-    backgrounds: { value: 'black' },
   },
 }
 
