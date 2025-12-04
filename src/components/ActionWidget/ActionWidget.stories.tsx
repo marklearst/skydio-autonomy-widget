@@ -4,7 +4,7 @@ import ActionWidget from './ActionWidget'
 const meta: Meta<typeof ActionWidget> = {
   title: 'Components/ActionWidget',
   component: ActionWidget,
-  tags: ['autodocs'],
+  // tags: ['autodocs'],
 }
 
 export default meta
