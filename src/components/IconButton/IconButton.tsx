@@ -1,18 +1,21 @@
-import React from 'react'
+import React, { useRef, useState } from 'react'
 import * as Icons from '../../assets/icons'
 import type { IconName, IconComponentType } from '../../assets/icons'
+import Tooltip from '../Tooltip'
 
 export type IconButtonVariant = 'default' | 'stop' | 'play' | 'action' | 'caret'
 export type IconButtonSize = 32 | 50
 
 export interface IconButtonProps {
   icon: IconName
+  tooltip?: string
   onClick?: () => void
   ariaLabel: string
   variant?: IconButtonVariant
   size?: IconButtonSize
   flex?: boolean // If true, flex:1 for ActionControls row
-  className?: string // Optional custom class for additional styling
+  buttonStyle?: string // Tailwind classes for button container
+  iconRotation?: 'rotate-90' | 'rotate-180' | 'rotate-270' | '' // Tailwind rotation for icon
   disabled?: boolean
 }
 
@@ -32,51 +35,76 @@ const variantClasses: Record<IconButtonVariant, string> = {
  */
 export const IconButton: React.FC<IconButtonProps> = ({
   icon,
+  tooltip,
   onClick,
   ariaLabel,
   variant = 'default',
   size = 32,
   flex = false,
-  className,
+  buttonStyle,
+  iconRotation,
   disabled = false,
 }) => {
   const IconComponent = Icons[icon] as unknown as IconComponentType
+
+  const buttonRef = useRef<HTMLButtonElement>(null)
+  const [hovered, setHovered] = useState(false)
+  const [rect, setRect] = useState<DOMRect | null>(null)
 
   if (!IconComponent) {
     console.warn(`Icon "${icon}" not found in icons barrel.`)
     return null
   }
 
+  const handleMouseEnter = () => {
+    if (buttonRef.current) {
+      const buttonRect = buttonRef.current.getBoundingClientRect()
+      setRect(buttonRect)
+    }
+    setHovered(true)
+  }
+
+  const handleMouseLeave = () => {
+    setHovered(false)
+  }
+
   return (
-    <button
-      type="button"
-      disabled={disabled}
-      className={`inline-flex items-center justify-center transition-colors
+    <>
+      <button
+        type="button"
+        ref={buttonRef}
+        disabled={disabled}
+        className={`inline-flex items-center justify-center relative transition-colors
         ${size === 32 ? 'w-8 h-8' : 'w-[50px] h-[50px]'}
         rounded-[2px]
         ${variantClasses[variant]}
-        p-0 m-0
         ${flex ? 'flex-1' : ''}
         ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
-        focus:outline-none focus-visible:ring focus-visible:ring-white focus-visible:ring-offset-2
-        ${className ? className.replace(/rotate-\d+/g, '').trim() : ''}
+        ${buttonStyle}
       `}
-      onClick={onClick}
-      aria-label={ariaLabel}
-      tabIndex={0}>
-      <span
-        className={
-          className && className.match(/rotate-\d+/)
-            ? className.match(/rotate-\d+/)![0]
-            : ''
-        }>
-        <IconComponent
-          width={16}
-          height={16}
-          className="pointer-events-none"
-        />
-      </span>
-    </button>
+        aria-label={ariaLabel}
+        onClick={onClick}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onFocus={handleMouseEnter}
+        onBlur={handleMouseLeave}
+        tabIndex={0}>
+        <span className={iconRotation}>
+          <IconComponent
+            width={16}
+            height={16}
+            className={'pointer-events-none'}
+          />
+        </span>
+      </button>
+      {tooltip && (
+        <Tooltip
+          targetRect={rect}
+          visible={hovered}>
+          {tooltip}
+        </Tooltip>
+      )}
+    </>
   )
 }
 

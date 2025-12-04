@@ -70,13 +70,16 @@ const ActionWidget: React.FC<ActionWidgetProps> = ({
         <div className="flex items-center gap-2">
           <IconButton
             icon="CaretIcon"
+            tooltip={expanded ? 'Collapse Controls' : 'View Controls'}
             ariaLabel={expanded ? 'Collapse controls' : 'Expand controls'}
             onClick={() => setExpanded((prev) => !prev)}
-            className={`transition-transform ${expanded ? '' : 'rotate-180'}`}
             variant="caret"
+            buttonStyle="transform transition-transform"
+            iconRotation={expanded ? 'rotate-180' : ''}
             size={32}
           />
           <IconButton
+            tooltip={isPaused ? 'Resume Mission' : 'Pause Mission'}
             icon={isPaused ? 'PlayIcon' : 'StopIcon'}
             ariaLabel={isPaused ? 'Play' : 'Pause'}
             onClick={handlePauseToggle}
