@@ -14,9 +14,9 @@ const Tooltip: React.FC<TooltipProps> = ({ targetRect, children, visible }) => {
     if (targetRect && visible) {
       setStyle({
         position: 'fixed',
-        bottom: targetRect.bottom + 28, // move below
+        top: targetRect.bottom + 14, // 14px below the button
         left: targetRect.left + targetRect.width / 2,
-        transform: 'translate(-50%, -100%)',
+        transform: 'translate(-50%, 0)',
         background: '#000',
         color: '#fff',
         padding: '4px 8px',
