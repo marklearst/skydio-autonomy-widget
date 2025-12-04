@@ -21,7 +21,7 @@ const variantClasses: Record<IconButtonVariant, string> = {
   play: 'bg-[#0066CC] hover:bg-[#005bb5]',
   stop: 'bg-[#941920] hover:bg-[#7a1620]',
   action: 'bg-[#333333] hover:bg-[#444444]',
-  caret: 'bg-transparent hover:bg-transparent',
+  caret: 'bg-transparent hover:bg-[#3A3A3A]',
 }
 
 /**
@@ -53,22 +53,29 @@ export const IconButton: React.FC<IconButtonProps> = ({
       disabled={disabled}
       className={`inline-flex items-center justify-center transition-colors
         ${size === 32 ? 'w-8 h-8' : 'w-[50px] h-[50px]'}
-        rounded-[2px] border border-[#4D4D4D]
+        rounded-[2px]
         ${variantClasses[variant]}
         p-0 m-0
         ${flex ? 'flex-1' : ''}
         ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
         focus:outline-none focus-visible:ring focus-visible:ring-white focus-visible:ring-offset-2
-        ${className ?? ''}
+        ${className ? className.replace(/rotate-\d+/g, '').trim() : ''}
       `}
       onClick={onClick}
       aria-label={ariaLabel}
       tabIndex={0}>
-      <IconComponent
-        width={16}
-        height={16}
-        className="pointer-events-none"
-      />
+      <span
+        className={
+          className && className.match(/rotate-\d+/)
+            ? className.match(/rotate-\d+/)![0]
+            : ''
+        }>
+        <IconComponent
+          width={16}
+          height={16}
+          className="pointer-events-none"
+        />
+      </span>
     </button>
   )
 }

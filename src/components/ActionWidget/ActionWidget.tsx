@@ -73,7 +73,7 @@ const ActionWidget: React.FC<ActionWidgetProps> = ({
             ariaLabel={expanded ? 'Collapse controls' : 'Expand controls'}
             onClick={() => setExpanded((prev) => !prev)}
             className={`transition-transform ${expanded ? '' : 'rotate-180'}`}
-            variant="default"
+            variant="caret"
             size={32}
           />
           <IconButton

@@ -18,10 +18,26 @@ export interface ActionControlsProps {
 }
 
 const defaultButtons: ActionControlButton[] = [
-  { icon: 'ArrowLeftIcon', ariaLabel: 'Collapse' },
-  { icon: 'CaretIcon', ariaLabel: 'Left', className: 'rotate-180' },
-  { icon: 'CaretIcon', ariaLabel: 'Right' },
-  { icon: 'CameraIcon', ariaLabel: 'Camera' },
+  {
+    icon: 'ArrowLeftIcon',
+    ariaLabel: 'Collapse',
+    className: 'border border-[#4D4D4D]',
+  },
+  {
+    icon: 'CaretIcon',
+    ariaLabel: 'Left',
+    className: 'rotate-90 border border-[#4D4D4D]',
+  },
+  {
+    icon: 'CaretIcon',
+    ariaLabel: 'Right',
+    className: 'rotate-270 border border-[#4D4D4D]',
+  },
+  {
+    icon: 'CameraIcon',
+    ariaLabel: 'Camera',
+    className: 'border border-[#4D4D4D]',
+  },
 ]
 
 const ActionControls: React.FC<ActionControlsProps> = ({
