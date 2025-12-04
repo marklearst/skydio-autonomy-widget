@@ -8,8 +8,10 @@ export interface ActionControlButton {
   onClick?: () => void
   variant?: 'default' | 'stop' | 'play' | 'action' | 'caret'
   size?: 32 | 50
-  className?: string
+  buttonStyle?: string
+  iconRotation?: 'rotate-90' | 'rotate-270' | 'rotate-180' | undefined
   disabled?: boolean
+  tooltip?: string
 }
 
 export interface ActionControlsProps {
@@ -20,23 +22,25 @@ export interface ActionControlsProps {
 const defaultButtons: ActionControlButton[] = [
   {
     icon: 'ArrowLeftIcon',
-    ariaLabel: 'Collapse',
-    className: 'border border-[#4D4D4D]',
+    ariaLabel: 'Go Left',
+    buttonStyle: 'border border-[#4D4D4D]',
   },
   {
     icon: 'CaretIcon',
     ariaLabel: 'Left',
-    className: 'rotate-90 border border-[#4D4D4D]',
+    buttonStyle: 'border border-[#4D4D4D]',
+    iconRotation: 'rotate-90',
   },
   {
     icon: 'CaretIcon',
     ariaLabel: 'Right',
-    className: 'rotate-270 border border-[#4D4D4D]',
+    buttonStyle: 'border border-[#4D4D4D]',
+    iconRotation: 'rotate-270',
   },
   {
     icon: 'CameraIcon',
     ariaLabel: 'Camera',
-    className: 'border border-[#4D4D4D]',
+    buttonStyle: 'border border-[#4D4D4D]',
   },
 ]
 
@@ -55,7 +59,8 @@ const ActionControls: React.FC<ActionControlsProps> = ({
         onClick={btn.onClick}
         variant={btn.variant ?? 'action'}
         size={btn.size ?? 32}
-        className={btn.className}
+        buttonStyle={btn.buttonStyle}
+        iconRotation={btn.iconRotation}
         disabled={btn.disabled}
         flex
       />
