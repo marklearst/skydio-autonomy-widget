@@ -7,5 +7,5 @@
 }
 
 .action-widget-base {
-  @apply !w-[240px] bg-[#1A1A1A] border border-[#262626] rounded-[4px] flex flex-col transition-all duration-200 overflow-hidden;
+  @apply w-[240px] bg-[#1A1A1A] border border-[#262626] rounded-[4px] flex flex-col transition-all duration-200 overflow-hidden;
 }

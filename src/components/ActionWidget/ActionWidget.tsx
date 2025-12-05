@@ -3,7 +3,7 @@ import Timer from '../Timer/Timer'
 import { IconButton } from '../IconButton/IconButton'
 import ActionControls from '../ActionControls/ActionControls'
 import StatusMessage from '../StatusMessage/StatusMessage'
-import { useBreakpoint } from '../../hooks/useBreakpoint'
+import { useBreakpoint } from '../../hooks'
 
 export interface ActionWidgetProps {
   actionName: string
@@ -22,22 +22,23 @@ const ActionWidget: React.FC<ActionWidgetProps> = ({
   onPauseChange,
   onActionNameChange,
 }) => {
+  // Local state for expand/collapse
   const [expanded, setExpanded] = useState(expandedProp ?? false)
   const [internalPaused, setInternalPaused] = useState(isPausedProp ?? false)
   const [internalActionName, setInternalActionName] = useState(actionName)
 
-  const isCompact = useBreakpoint(1280)
-
+  // Sync internal state with props for Storybook/controlled usage
   useEffect(() => {
     setInternalPaused(isPausedProp ?? false)
   }, [isPausedProp])
-
   useEffect(() => {
     setInternalActionName(actionName)
   }, [actionName])
 
+  // Controlled or uncontrolled
   const isPaused = isPausedProp !== undefined ? isPausedProp : internalPaused
   const currentActionName = isPaused ? 'Mission Paused' : internalActionName
+  const isCompact = useBreakpoint(1280)
 
   const handlePauseToggle = () => {
     if (isPausedProp !== undefined && onPauseChange) {
@@ -58,12 +59,8 @@ const ActionWidget: React.FC<ActionWidgetProps> = ({
   return (
     <div
       className={`action-widget-base ${
-        isCompact
-          ? '!h-[48px] !w-[88px] inline-flex'
-          : expanded
-          ? 'h-[48px] w-full'
-          : 'h-[48px] w-full'
-      }`}>
+        expanded && !isCompact ? 'h-[88px]' : 'h-[48px]'
+      } ${isCompact && '!w-[88px]'}`}>
       {isCompact ? (
         <div className="flex items-center gap-2 px-2 py-2">
           <Timer
