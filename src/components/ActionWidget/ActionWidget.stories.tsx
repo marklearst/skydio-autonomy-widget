@@ -129,6 +129,60 @@ export const ZeroDuration: Story = {
   ),
 }
 
+export const SingleButton: Story = {
+  args: {
+    actionName: 'Single Button',
+    time: 90,
+    expanded: true,
+    buttons: [
+      {
+        icon: 'XIcon',
+        ariaLabel: 'Close',
+        variant: 'action',
+        buttonStyle: 'border border-[#4D4D4D]',
+      },
+    ],
+  },
+  render: (args, { updateArgs }) => (
+    <ActionWidget
+      {...args}
+      onPauseChange={(paused) => updateArgs({ isPaused: paused })}
+      onActionNameChange={(name) => updateArgs({ actionName: name })}
+    />
+  ),
+}
+
+export const TwoButtons: Story = {
+  args: {
+    actionName: 'Two Buttons',
+    time: 120,
+    expanded: true,
+    buttons: [
+      {
+        icon: 'CaretIcon',
+        ariaLabel: 'Left',
+        variant: 'action',
+        buttonStyle: 'border border-[#4D4D4D]',
+        iconRotation: 'rotate-90',
+      },
+      {
+        icon: 'CaretIcon',
+        ariaLabel: 'Right',
+        variant: 'action',
+        buttonStyle: 'border border-[#4D4D4D]',
+        iconRotation: 'rotate-270',
+      },
+    ],
+  },
+  render: (args, { updateArgs }) => (
+    <ActionWidget
+      {...args}
+      onPauseChange={(paused) => updateArgs({ isPaused: paused })}
+      onActionNameChange={(name) => updateArgs({ actionName: name })}
+    />
+  ),
+}
+
 export const Breakpoint: Story = {
   args: {
     actionName: 'Testing Breakpoint',

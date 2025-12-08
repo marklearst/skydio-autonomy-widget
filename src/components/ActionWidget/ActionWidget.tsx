@@ -5,6 +5,8 @@ import { ActionControls } from '../ActionControls'
 import { StatusMessage } from '../StatusMessage'
 import { useBreakpoint } from '../../hooks'
 
+import type { IconButtonProps } from '../IconButton'
+
 export interface ActionWidgetProps {
   actionName: string
   time: number
@@ -12,6 +14,7 @@ export interface ActionWidgetProps {
   isPaused?: boolean
   onPauseChange?: (paused: boolean) => void
   onActionNameChange?: (actionName: string) => void
+  buttons?: Omit<IconButtonProps, 'flex'>[]
 }
 
 export const ActionWidget: React.FC<ActionWidgetProps> = ({
@@ -21,6 +24,7 @@ export const ActionWidget: React.FC<ActionWidgetProps> = ({
   isPaused: isPausedProp,
   onPauseChange,
   onActionNameChange,
+  buttons,
 }) => {
   const [expanded, setExpanded] = useState(expandedProp ?? false)
   const [internalPaused, setInternalPaused] = useState(isPausedProp ?? false)
@@ -106,7 +110,7 @@ export const ActionWidget: React.FC<ActionWidgetProps> = ({
           </div>
           {expanded && (
             <div className="px-2 w-full">
-              <ActionControls />
+              <ActionControls buttons={buttons} />
             </div>
           )}
         </>
