@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { Timer } from '../Timer'
-import { IconButton } from '../IconButton'
+import { ActionButton } from '../ActionButton'
 import { ActionControls } from '../ActionControls'
 import { StatusMessage } from '../StatusMessage'
 import { useBreakpoint } from '../../hooks'
 
-import type { IconButtonProps } from '../IconButton'
+import type { ActionButtonProps } from '../ActionButton/ActionButton'
 
 export interface ActionWidgetProps {
   actionName: string
@@ -14,7 +14,7 @@ export interface ActionWidgetProps {
   isPaused?: boolean
   onPauseChange?: (paused: boolean) => void
   onActionNameChange?: (actionName: string) => void
-  buttons?: Omit<IconButtonProps, 'flex'>[]
+  buttons?: Omit<ActionButtonProps, 'flex'>[]
 }
 
 export const ActionWidget: React.FC<ActionWidgetProps> = ({
@@ -69,7 +69,7 @@ export const ActionWidget: React.FC<ActionWidgetProps> = ({
             duration={time}
             state={isPaused ? 'paused' : 'running'}
           />
-          <IconButton
+          <ActionButton
             icon={isPaused ? 'PlayIcon' : 'StopIcon'}
             variant={isPaused ? 'play' : 'stop'}
             tooltip={isPaused ? 'Resume Mission' : 'Pause Mission'}
@@ -89,7 +89,7 @@ export const ActionWidget: React.FC<ActionWidgetProps> = ({
               <StatusMessage message={currentActionName} />
             </div>
             <div className="flex items-center gap-2">
-              <IconButton
+              <ActionButton
                 icon="CaretIcon"
                 tooltip={expanded ? 'Collapse Controls' : 'View Controls'}
                 variant="caret"
@@ -98,7 +98,7 @@ export const ActionWidget: React.FC<ActionWidgetProps> = ({
                 onClick={() => setExpanded((prev) => !prev)}
                 size={32}
               />
-              <IconButton
+              <ActionButton
                 icon={isPaused ? 'PlayIcon' : 'StopIcon'}
                 variant={isPaused ? 'play' : 'stop'}
                 tooltip={isPaused ? 'Resume Mission' : 'Pause Mission'}

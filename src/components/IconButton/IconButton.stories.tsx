@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { IconButton } from './IconButton'
+import { ActionButton } from '../ActionButton/ActionButton'
 import type { IconName } from '../../assets/icons'
 
-const meta: Meta<typeof IconButton> = {
-  title: 'Components/IconButton',
-  component: IconButton,
+const meta: Meta<typeof ActionButton> = {
+  title: 'Components/ActionButton',
+  component: ActionButton,
   tags: ['autodocs'],
   parameters: {
     docs: {
@@ -56,7 +56,35 @@ const meta: Meta<typeof IconButton> = {
 }
 
 export default meta
-type Story = StoryObj<typeof IconButton>
+type Story = StoryObj<typeof ActionButton>
+
+export const IconOnly: Story = {
+  args: {
+    icon: 'PlayIcon',
+    ariaLabel: 'Play',
+    variant: 'play',
+    size: 32,
+  },
+}
+
+export const TextOnly: Story = {
+  args: {
+    label: 'Exit Mission',
+    ariaLabel: 'Exit Mission',
+    variant: 'action',
+    size: "auto",
+  },
+}
+
+export const IconAndText: Story = {
+  args: {
+    icon: 'StopIcon',
+    label: 'Stop',
+    ariaLabel: 'Stop',
+    variant: 'stop',
+    size: "auto",
+  },
+}
 
 export const Play: Story = {
   args: {
@@ -109,7 +137,7 @@ export const Route: Story = {
     icon: 'RouteIcon' as IconName,
     ariaLabel: 'Route',
     variant: 'default',
-    size: 50,
+    size: "auto",
     flex: true,
   },
 }
@@ -128,42 +156,42 @@ export const AllVariants: Story = {
   args: {},
   render: () => (
     <div className="flex flex-wrap gap-4">
-      <IconButton
+      <ActionButton
         icon="PlayIcon"
         ariaLabel="Play"
         variant="play"
-        size={32}
+        size="auto"
       />
-      <IconButton
+      <ActionButton
         icon="StopIcon"
         ariaLabel="Stop"
         variant="stop"
-        size={32}
+        size="auto"
       />
-      <IconButton
+      <ActionButton
         icon="CameraIcon"
         ariaLabel="Camera"
         variant="action"
-        size={32}
+        size="auto"
       />
-      <IconButton
+      <ActionButton
         icon="CaretIcon"
         ariaLabel="Expand"
         variant="caret"
-        size={32}
+        size="auto"
       />
-      <IconButton
+      <ActionButton
         icon="CaretIcon"
         ariaLabel="Collapse"
         variant="caret"
-        size={32}
+        size="auto"
         iconRotation="rotate-180"
       />
-      <IconButton
+      <ActionButton
         icon="RouteIcon"
         ariaLabel="Route"
         variant="action"
-        size={50}
+        size="auto"
         flex
       />
     </div>

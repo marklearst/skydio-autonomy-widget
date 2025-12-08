@@ -86,6 +86,19 @@ export const Disabled: Story = {
   },
 }
 
+export const SingleButton: Story = {
+  args: {
+    buttons: [
+      {
+        icon: 'XIcon',
+        ariaLabel: 'Close',
+        variant: 'action',
+        buttonStyle: 'border border-[#4D4D4D]',
+      },
+    ],
+  },
+}
+
 export const CustomStyles: Story = {
   args: {
     className: 'bg-gray-800 p-4 rounded-md',
@@ -94,7 +107,7 @@ export const CustomStyles: Story = {
         icon: 'RouteIcon',
         ariaLabel: 'Route',
         variant: 'action',
-        size: 50,
+        size: "auto",
       },
     ],
   },

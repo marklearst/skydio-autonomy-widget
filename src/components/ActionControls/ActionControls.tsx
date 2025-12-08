@@ -1,13 +1,13 @@
-import { IconButton } from '../IconButton'
-import type { IconButtonProps } from '../IconButton'
+import { ActionButton } from '../ActionButton'
+import type { ActionButtonProps } from '../ActionButton/ActionButton'
 import type { IconName } from '../../assets/icons'
 
 export interface ActionControlsProps {
-  buttons?: Omit<IconButtonProps, 'flex'>[]
+  buttons?: Omit<ActionButtonProps, 'flex'>[]
   className?: string
 }
 
-const defaultButtons: Omit<IconButtonProps, 'flex'>[] = [
+const defaultButtons: Omit<ActionButtonProps, 'flex'>[] = [
   {
     icon: 'ArrowLeftIcon' as IconName,
     ariaLabel: 'Go Left',
@@ -46,7 +46,7 @@ export const ActionControls: React.FC<ActionControlsProps> = ({
     role="toolbar"
     aria-label="Action Controls">
     {buttons.map((btn, i) => (
-      <IconButton
+      <ActionButton
         key={`${btn.ariaLabel}-${i}`}
         {...btn}
         flex

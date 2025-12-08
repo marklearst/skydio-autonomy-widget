@@ -13,12 +13,12 @@ export function useTimer({
   onComplete,
   progressOverride,
 }: UseTimerOptions) {
-  const [remaining, setRemaining] = useState(Math.max(0, duration))
+  const [remaining, setRemaining] = useState(Math.max(0, Math.min(duration, 3599)))
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
   // Sync duration prop
   useEffect(() => {
-    setRemaining(Math.max(0, duration))
+    setRemaining(Math.max(0, Math.min(duration, 3599)))
   }, [duration])
 
   // Countdown effect
@@ -35,7 +35,8 @@ export function useTimer({
             if (onComplete) onComplete()
             return 0
           }
-          return r - 1
+          // Clamp to [0, 3599]
+          return Math.max(0, Math.min(r - 1, 3599))
         })
       }, 1000)
     }
@@ -57,7 +58,7 @@ export function useTimer({
     if (intervalRef.current) {
       clearInterval(intervalRef.current)
     }
-    setRemaining(Math.max(0, duration))
+    setRemaining(Math.max(0, Math.min(duration, 3599)))
   }, [duration])
 
   return {

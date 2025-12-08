@@ -39,9 +39,10 @@ export const Timer: React.FC<TimerProps> = ({
       ? '#ffd600'
       : '#fff'
   const display = formatTime(remaining)
-  const fontSize = display.length >= 5 ? 9 : display.length === 4 ? 5 : 13
+  // Increase font size for 5+ char displays by 1px
+  const fontSize = display.length >= 5 ? 7.5 : display.length === 4 ? 3 : 13
   const fontScale =
-    display.length >= 5 ? 0.28 : display.length === 4 ? 0.34 : 0.42
+    display.length >= 5 ? 0.25 : display.length === 4 ? 0.29 : 0.42
 
   return (
     <div className="relative flex items-center justify-center w-8 h-8">
