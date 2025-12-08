@@ -8,24 +8,26 @@ export interface UseTimerOptions {
 }
 
 export function useTimer({
-  duration,
+  duration = 0,
   state = 'running',
   onComplete,
   progressOverride,
 }: UseTimerOptions) {
-  const [remaining, setRemaining] = useState(duration ?? 0)
+  const [remaining, setRemaining] = useState(Math.max(0, duration))
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
   // Sync duration prop
   useEffect(() => {
-    if (typeof duration === 'number') {
-      setRemaining(duration)
-    }
+    setRemaining(Math.max(0, duration))
   }, [duration])
 
   // Countdown effect
   useEffect(() => {
-    if (state === 'running' && typeof duration === 'number' && remaining > 0) {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current)
+    }
+
+    if (state === 'running' && remaining > 0) {
       intervalRef.current = setInterval(() => {
         setRemaining((r) => {
           if (r <= 1) {
@@ -36,27 +38,26 @@ export function useTimer({
           return r - 1
         })
       }, 1000)
-    } else {
-      if (intervalRef.current) clearInterval(intervalRef.current)
     }
+
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current)
     }
-  }, [state, duration, onComplete, remaining])
+  }, [state, remaining, onComplete])
 
-  // Progress calculation (remaining / duration, clamped 0-1)
-  let progress = 1
-  if (typeof duration === 'number' && duration > 0) {
-    progress = remaining / duration
+  // Progress calculation
+  let progress =
+    duration > 0 ? Math.max(0, Math.min(1, remaining / duration)) : 1
+  if (typeof progressOverride === 'number' && !isNaN(progressOverride)) {
+    progress = Math.max(0, Math.min(1, progressOverride))
   }
-  if (typeof progressOverride === 'number') {
-    progress = progressOverride
-  }
-  progress = Math.max(0, Math.min(1, progress))
 
   // Reset timer
   const reset = useCallback(() => {
-    setRemaining(duration ?? 0)
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current)
+    }
+    setRemaining(Math.max(0, duration))
   }, [duration])
 
   return {
