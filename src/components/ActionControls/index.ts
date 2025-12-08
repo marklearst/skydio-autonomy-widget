@@ -1,1 +1,1 @@
-export * from './ActionControls';
+export { ActionControls } from './ActionControls'

@@ -1,1 +1,1 @@
-export * from './ActionWidget';
+export { ActionWidget } from './ActionWidget'

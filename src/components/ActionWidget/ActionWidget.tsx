@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react'
-import Timer from '../Timer/Timer'
-import { IconButton } from '../IconButton/IconButton'
-import ActionControls from '../ActionControls/ActionControls'
-import StatusMessage from '../StatusMessage/StatusMessage'
+import React, { useState, useEffect } from 'react'
+import { Timer } from '../Timer'
+import { IconButton } from '../IconButton'
+import { ActionControls } from '../ActionControls'
+import { StatusMessage } from '../StatusMessage'
 import { useBreakpoint } from '../../hooks'
 
 export interface ActionWidgetProps {
@@ -14,7 +14,7 @@ export interface ActionWidgetProps {
   onActionNameChange?: (actionName: string) => void
 }
 
-const ActionWidget: React.FC<ActionWidgetProps> = ({
+export const ActionWidget: React.FC<ActionWidgetProps> = ({
   actionName,
   time,
   expanded: expandedProp,
@@ -22,20 +22,18 @@ const ActionWidget: React.FC<ActionWidgetProps> = ({
   onPauseChange,
   onActionNameChange,
 }) => {
-  // Local state for expand/collapse
   const [expanded, setExpanded] = useState(expandedProp ?? false)
   const [internalPaused, setInternalPaused] = useState(isPausedProp ?? false)
   const [internalActionName, setInternalActionName] = useState(actionName)
 
-  // Sync internal state with props for Storybook/controlled usage
   useEffect(() => {
     setInternalPaused(isPausedProp ?? false)
   }, [isPausedProp])
+
   useEffect(() => {
     setInternalActionName(actionName)
   }, [actionName])
 
-  // Controlled or uncontrolled
   const isPaused = isPausedProp !== undefined ? isPausedProp : internalPaused
   const currentActionName = isPaused ? 'Mission Paused' : internalActionName
   const isCompact = useBreakpoint(1280)
@@ -60,7 +58,7 @@ const ActionWidget: React.FC<ActionWidgetProps> = ({
     <div
       className={`action-widget-base ${
         expanded && !isCompact ? 'h-[88px]' : 'h-[48px]'
-      } ${isCompact && '!w-[88px]'}`}>
+      } ${isCompact && '!w-[88px]'} bg-gray-900 text-white`}>
       {isCompact ? (
         <div className="flex items-center gap-2 px-2 py-2">
           <Timer
@@ -68,11 +66,11 @@ const ActionWidget: React.FC<ActionWidgetProps> = ({
             state={isPaused ? 'paused' : 'running'}
           />
           <IconButton
-            tooltip={isPaused ? 'Resume Mission' : 'Pause Mission'}
             icon={isPaused ? 'PlayIcon' : 'StopIcon'}
-            ariaLabel={isPaused ? 'Play' : 'Pause'}
-            onClick={handlePauseToggle}
             variant={isPaused ? 'play' : 'stop'}
+            tooltip={isPaused ? 'Resume Mission' : 'Pause Mission'}
+            ariaLabel={isPaused ? 'Resume' : 'Pause'}
+            onClick={handlePauseToggle}
             size={32}
           />
         </div>
@@ -90,19 +88,18 @@ const ActionWidget: React.FC<ActionWidgetProps> = ({
               <IconButton
                 icon="CaretIcon"
                 tooltip={expanded ? 'Collapse Controls' : 'View Controls'}
-                ariaLabel={expanded ? 'Collapse controls' : 'Expand controls'}
-                onClick={() => setExpanded((prev) => !prev)}
                 variant="caret"
-                buttonStyle="transform transition-transform"
                 iconRotation={expanded ? 'rotate-180' : ''}
+                ariaLabel={expanded ? 'Collapse' : 'Expand'}
+                onClick={() => setExpanded((prev) => !prev)}
                 size={32}
               />
               <IconButton
-                tooltip={isPaused ? 'Resume Mission' : 'Pause Mission'}
                 icon={isPaused ? 'PlayIcon' : 'StopIcon'}
-                ariaLabel={isPaused ? 'Play' : 'Pause'}
-                onClick={handlePauseToggle}
                 variant={isPaused ? 'play' : 'stop'}
+                tooltip={isPaused ? 'Resume Mission' : 'Pause Mission'}
+                ariaLabel={isPaused ? 'Resume' : 'Pause'}
+                onClick={handlePauseToggle}
                 size={32}
               />
             </div>
@@ -117,5 +114,3 @@ const ActionWidget: React.FC<ActionWidgetProps> = ({
     </div>
   )
 }
-
-export default ActionWidget

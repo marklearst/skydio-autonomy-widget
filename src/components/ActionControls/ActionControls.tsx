@@ -1,71 +1,56 @@
 import { IconButton } from '../IconButton'
-
+import type { IconButtonProps } from '../IconButton'
 import type { IconName } from '../../assets/icons'
 
-export interface ActionControlButton {
-  icon: IconName
-  ariaLabel: string
-  onClick?: () => void
-  variant?: 'default' | 'stop' | 'play' | 'action' | 'caret'
-  size?: 32 | 50
-  buttonStyle?: string
-  iconRotation?: 'rotate-90' | 'rotate-270' | 'rotate-180' | undefined
-  disabled?: boolean
-  tooltip?: string
-}
-
 export interface ActionControlsProps {
-  buttons?: ActionControlButton[]
+  buttons?: Omit<IconButtonProps, 'flex'>[]
   className?: string
 }
 
-const defaultButtons: ActionControlButton[] = [
+const defaultButtons: Omit<IconButtonProps, 'flex'>[] = [
   {
-    icon: 'ArrowLeftIcon',
+    icon: 'ArrowLeftIcon' as IconName,
     ariaLabel: 'Go Left',
     buttonStyle: 'border border-[#4D4D4D]',
+    variant: 'action',
   },
   {
-    icon: 'CaretIcon',
+    icon: 'CaretIcon' as IconName,
     ariaLabel: 'Left',
     buttonStyle: 'border border-[#4D4D4D]',
     iconRotation: 'rotate-90',
+    variant: 'action',
   },
   {
-    icon: 'CaretIcon',
+    icon: 'CaretIcon' as IconName,
     ariaLabel: 'Right',
     buttonStyle: 'border border-[#4D4D4D]',
     iconRotation: 'rotate-270',
+    variant: 'action',
   },
   {
-    icon: 'CameraIcon',
+    icon: 'CameraIcon' as IconName,
     ariaLabel: 'Camera',
     buttonStyle: 'border border-[#4D4D4D]',
+    variant: 'action',
   },
 ]
 
-const ActionControls: React.FC<ActionControlsProps> = ({
+export const ActionControls: React.FC<ActionControlsProps> = ({
   buttons = defaultButtons,
-  className,
+  className = '',
 }) => (
   <div
-    className={`flex gap-2 ${className ?? ''}`}
-    style={{ minWidth: 50 }}>
+    className={`flex gap-2 ${className}`}
+    style={{ minWidth: 50 }}
+    role="toolbar"
+    aria-label="Action Controls">
     {buttons.map((btn, i) => (
       <IconButton
-        key={btn.icon + i}
-        icon={btn.icon}
-        ariaLabel={btn.ariaLabel}
-        onClick={btn.onClick}
-        variant={btn.variant ?? 'action'}
-        size={btn.size ?? 32}
-        buttonStyle={btn.buttonStyle}
-        iconRotation={btn.iconRotation}
-        disabled={btn.disabled}
+        key={`${btn.ariaLabel}-${i}`}
+        {...btn}
         flex
       />
     ))}
   </div>
 )
-
-export default ActionControls
