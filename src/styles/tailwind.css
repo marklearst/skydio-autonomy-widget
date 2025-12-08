@@ -2,8 +2,12 @@
 @import "tailwindcss/preflight.css" layer(base);
 @import "tailwindcss/utilities.css" layer(utilities);
 
-* {
+/* * {
   transition: all 0.3s ease-in-out;
+} */
+
+.sb-show-main, .docs-story {
+  @apply !bg-[#333333];
 }
 
 .action-widget-base {
