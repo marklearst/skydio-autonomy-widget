@@ -72,7 +72,7 @@ export const Paused: Story = {
   args: {
     actionName: 'Mission Paused',
     time: 407,
-    expanded: false,
+    isPaused: true,
   },
   render: (args, { updateArgs }) => (
     <ActionWidget
