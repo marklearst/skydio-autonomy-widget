@@ -1,17 +1,64 @@
 import { useRef, useState } from 'react'
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import Tooltip from './Tooltip'
+import { Tooltip } from './Tooltip'
+import { IconButton } from '../IconButton/IconButton'
 
 const meta: Meta<typeof Tooltip> = {
   title: 'Components/Tooltip',
   component: Tooltip,
+  tags: ['autodocs'],
+  parameters: {
+    docs: {
+      description: {
+        component: 'A floating tooltip displayed on hover of a target element.',
+      },
+    },
+    a11y: {
+      config: { rules: [{ id: 'aria-tooltip', enabled: true }] },
+    },
+  },
+  argTypes: {
+    targetRect: {
+      control: 'object',
+      description: 'DOMRect of the target element.',
+    },
+    visible: {
+      control: 'boolean',
+      description: 'Whether the tooltip is visible.',
+    },
+    children: { control: 'text', description: 'Tooltip content.' },
+    className: { control: 'text', description: 'Additional Tailwind classes.' },
+  },
 }
 
 export default meta
-
 type Story = StoryObj<typeof Tooltip>
 
 export const Basic: Story = {
+  render: () => (
+    <IconButton
+      icon="PlayIcon"
+      ariaLabel="Play"
+      variant="play"
+      size={32}
+      tooltip="Start the action"
+    />
+  ),
+}
+
+export const LongText: Story = {
+  render: () => (
+    <IconButton
+      icon="CameraIcon"
+      ariaLabel="Camera"
+      variant="action"
+      size={32}
+      tooltip="Capture a high-resolution image with advanced settings"
+    />
+  ),
+}
+
+export const CustomPosition: Story = {
   render: () => {
     const [hovered, setHovered] = useState(false)
     const [rect, setRect] = useState<DOMRect | null>(null)
@@ -19,7 +66,8 @@ export const Basic: Story = {
 
     const handleMouseEnter = () => {
       if (buttonRef.current) {
-        setRect(buttonRef.current.getBoundingClientRect())
+        const r = buttonRef.current.getBoundingClientRect()
+        setRect({ ...r, left: r.left + 20 })
       }
       setHovered(true)
     }
@@ -36,8 +84,9 @@ export const Basic: Story = {
         </button>
         <Tooltip
           targetRect={rect}
-          visible={hovered}>
-          Tooltip Text
+          visible={hovered}
+          className="bg-blue-600">
+          Custom Position
         </Tooltip>
       </div>
     )

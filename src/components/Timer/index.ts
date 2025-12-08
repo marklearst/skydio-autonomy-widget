@@ -1,1 +1,1 @@
-export * from './Timer';
+export { Timer } from './Timer'

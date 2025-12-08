@@ -2,14 +2,14 @@ import { useTimer } from '../../hooks'
 import { formatTime } from '../../utils'
 
 export interface TimerProps {
-  duration?: number
-  progress?: number // 0 to 1
+  duration: number
+  progress?: number
   condensed?: boolean
   state?: 'running' | 'paused'
   onComplete?: () => void
 }
 
-const Timer: React.FC<TimerProps> = ({
+export const Timer: React.FC<TimerProps> = ({
   duration,
   progress: progressOverride,
   condensed = false,
@@ -17,43 +17,37 @@ const Timer: React.FC<TimerProps> = ({
   onComplete,
 }) => {
   const { remaining, progress } = useTimer({
-    duration,
+    duration: Math.max(0, duration),
     state,
     onComplete,
     progressOverride,
   })
 
-  // SVG constants
-  const size = 32 // px
+  const size = 32
   const strokeWidth = 2
   const radius = (size - strokeWidth) / 2
   const circumference = 2 * Math.PI * radius
-  // The KEY: use (1 - progress) for offset to make the arc vanish counter-clockwise from the top
-  const progressOffset = circumference * (1 - progress)
+  const progressOffset =
+    circumference * (1 - Math.max(0, Math.min(1, progress)))
 
-  // Color logic
-  let ringColor = '#fff'
-  if (state === 'paused') ringColor = '#666666'
-  // else if (progress <= 0.1) ringColor = '#ff3b30'
-  // else if (progress <= 0.5) ringColor = '#ffd600'
-
+  const ringColor =
+    state === 'paused'
+      ? '#666666'
+      : progress <= 0.1
+      ? '#ff3b30'
+      : progress <= 0.5
+      ? '#ffd600'
+      : '#fff'
   const display = formatTime(remaining)
-
+  const fontSize = display.length >= 5 ? 9 : display.length === 4 ? 5 : 13
   const fontScale =
     display.length >= 5 ? 0.28 : display.length === 4 ? 0.34 : 0.42
 
   return (
-    <div
-      className="flex items-center justify-center"
-      style={{
-        width: `${size}px`,
-        height: `${size}px`,
-        position: 'relative',
-      }}>
+    <div className="relative flex items-center justify-center w-8 h-8">
       <svg
         width={size}
         height={size}>
-        {/* Background ring */}
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -62,7 +56,6 @@ const Timer: React.FC<TimerProps> = ({
           strokeWidth={strokeWidth}
           fill="none"
         />
-        {/* Progress ring (depletes counter-clockwise from the top) */}
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -76,32 +69,18 @@ const Timer: React.FC<TimerProps> = ({
           transform={`rotate(-90 ${size / 2} ${size / 2})`}
         />
       </svg>
-
       {!condensed && (
         <span
+          className="absolute inset-0 flex items-center justify-center font-sans font-bold text-white text-center select-none"
           style={{
-            position: 'absolute',
-            left: 0,
-            top: 0,
-            width: `${size}px`,
-            height: `${size}px`,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontFamily: 'SF Pro Display, sans-serif',
-            fontWeight: '700',
-            fontSize: `clamp(9px, ${size * fontScale}px, 16px)`,
+            fontSize: `clamp(${fontSize}px, ${size * fontScale}px, 16px)`,
             lineHeight: '10px',
-            color: '#fff',
-            textAlign: 'center',
-            pointerEvents: 'none',
-            userSelect: 'none',
-          }}>
+          }}
+          role="timer"
+          aria-live="polite">
           {display}
         </span>
       )}
     </div>
   )
 }
-
-export default Timer
