@@ -5,8 +5,8 @@ A React-based, highly composable widget system for Skydio’s “Rivit” design
 ## Features
 
 - **Timer Ring**: Circular countdown with smooth animation, auto-sizing label, and icon fade-in support.
-- **Action Buttons**: Single flexible `IconButton` handles all stateful actions (stop, play, expand, etc.), with variants for color, tooltip, and accessibility.
-- **Action Controls Row**: (Desktop) Fully composable row of action buttons for advanced mission controls.
+- **Autonomy Buttons**: Single flexible `IconButton` handles all stateful actions (stop, play, expand, etc.), with variants for color, tooltip, and accessibility.
+- **Autonomy Controls Row**: (Desktop) Fully composable row of action buttons for advanced mission controls.
 - **Responsive Layout**: Optimized for both desktop and mobile (1280px and below: only timer + main action; desktop: full controls).
 - **Status Message**: Optional, dynamically updates based on action state or external input.
 - **Accessible & Themeable**: Built with semantic markup, keyboard support, and dark/light theming via Tailwind.
@@ -16,10 +16,10 @@ A React-based, highly composable widget system for Skydio’s “Rivit” design
 ```plaintext
 src/
   components/
-    ActionWidget/         # Main widget, handles layout and responsive state
+    AutonomyWidget/         # Main widget, handles layout and responsive state
     Timer/                # Countdown ring, supports label/icon swap
     IconButton/           # All-purpose action button, uses named icons
-    ActionControls/       # Row of control buttons (desktop only)
+    AutonomyControls/       # Row of control buttons (desktop only)
     StatusMessage/        # Status text/message component
   hooks/                  # Custom hooks (breakpoint, timer logic)
   utils/                  # Shared utilities (e.g. time formatting)
