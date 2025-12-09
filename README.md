@@ -20,7 +20,7 @@ src/
   components/
     AutonomyWidget/         # Main widget, handles layout and responsive state
     Timer/                  # Countdown ring, supports label/icon swap
-    IconButton/             # All-purpose autonomy button, uses named icons
+    Button/                 # All-purpose autonomy button, uses named icons
     Controls/               # Row of autonomy control buttons (desktop only)
     StatusMessage/          # Status text/message component
   hooks/                    # Custom hooks (breakpoint, timer logic)
