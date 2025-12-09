@@ -1,6 +1,6 @@
 import { AutonomyButton } from '../AutonomyButton'
-import type { AutonomyButtonProps } from '../AutonomyButton/AutonomyButton'
-import type { IconName } from '../../assets/icons'
+import type { AutonomyButtonProps } from 'components'
+import type { IconName } from 'icons'
 
 export interface ControlsProps {
   buttons?: Omit<AutonomyButtonProps, 'flex'>[]
