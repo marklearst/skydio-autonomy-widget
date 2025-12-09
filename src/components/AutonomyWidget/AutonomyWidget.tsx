@@ -1,11 +1,8 @@
 import React, { useState, useEffect } from 'react'
-import { Timer } from '../Timer'
-import { AutonomyButton } from '../AutonomyButton'
-import { Controls } from '../Controls'
-import { StatusMessage } from '../StatusMessage'
-import { useBreakpoint } from '../../hooks'
+import { Timer, AutonomyButton, Controls, StatusMessage } from 'components'
+import { useBreakpoint } from 'hooks'
 
-import type { AutonomyButtonProps } from '../AutonomyButton/AutonomyButton'
+import type { AutonomyButtonProps } from 'components'
 
 export interface AutonomyWidgetProps {
   actionName: string

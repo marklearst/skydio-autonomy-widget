@@ -1,5 +1,12 @@
 {
   "compilerOptions": {
+    "baseUrl": "src",
+    "paths": {
+      "hooks": ["hooks"],
+      "components": ["components"],
+      "utils": ["utils"],
+      "icons": ["assets/icons"],
+    },
     "rootDir": "src",
     "outDir": "dist",
     "declaration": true, // Only if you want .d.ts files (usually for libraries)

@@ -1,7 +1,7 @@
 import React, { useRef, useState, useMemo } from 'react'
-import * as Icons from '../../assets/icons'
-import type { IconName, IconComponentType } from '../../assets/icons'
-import { Tooltip } from '../Tooltip'
+import * as Icons from 'icons'
+import type { IconName, IconComponentType } from 'icons'
+import { Tooltip } from 'components'
 
 export type AutonomyButtonVariant =
   | 'default'

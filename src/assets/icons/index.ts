@@ -9,7 +9,6 @@ import RouteIcon from './RouteIcon.svg?react'
 import StopIcon from './StopIcon.svg?react'
 import XIcon from './XIcon.svg?react'
 
-// Export icons individually
 export {
   ArrowLeftIcon,
   CameraIcon,

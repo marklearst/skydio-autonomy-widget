@@ -1,2 +1,2 @@
-// barrel
-export * from './time';
+
+export { formatTime } from './time'
