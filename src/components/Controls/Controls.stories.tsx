@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { Controls } from './Controls'
+import { Controls } from 'components'
 
 const meta: Meta<typeof Controls> = {
   title: 'Components/Controls',

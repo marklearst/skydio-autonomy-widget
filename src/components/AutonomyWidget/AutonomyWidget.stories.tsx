@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { AutonomyWidget } from './AutonomyWidget'
+import { AutonomyWidget } from 'components'
 
 const meta: Meta<typeof AutonomyWidget> = {
   title: 'Components/AutonomyWidget',

@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { Tooltip } from './Tooltip'
-import { Button } from '../Button/Button'
+import { Tooltip } from 'components'
+import { Button } from 'components'
 
 const meta: Meta<typeof Tooltip> = {
   title: 'Components/Tooltip',

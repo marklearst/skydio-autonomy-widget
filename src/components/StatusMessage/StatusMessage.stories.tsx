@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { StatusMessage } from './StatusMessage'
+import { StatusMessage } from 'components'
 
 const meta: Meta<typeof StatusMessage> = {
   title: 'Components/StatusMessage',

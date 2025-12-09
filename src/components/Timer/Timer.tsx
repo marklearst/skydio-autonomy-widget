@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
-import { useTimer } from '../../hooks'
-import { formatTime } from '../../utils'
+import { useTimer } from 'hooks'
+import { formatTime } from 'utils'
 import { motion, AnimatePresence } from 'framer-motion'
-import { RouteIcon } from '../../assets/icons' // Barrel import
+import { RouteIcon } from 'icons'
 
 export interface TimerProps {
   duration: number

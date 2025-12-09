@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { AutonomyButton } from '../AutonomyButton/AutonomyButton'
-import type { IconName } from '../../assets/icons'
+import { AutonomyButton } from 'components'
+import type { IconName } from 'icons'
 
 const meta: Meta<typeof AutonomyButton> = {
   title: 'Components/Buttons',
