@@ -2,14 +2,10 @@
 @import "tailwindcss/preflight.css" layer(base);
 @import "tailwindcss/utilities.css" layer(utilities);
 
-/* * {
-  transition: all 0.3s ease-in-out;
-} */
-
 .sb-show-main, .docs-story {
   @apply !bg-[#333333];
 }
 
-.action-widget-base {
+.autonomy-widget-base {
   @apply w-[240px] bg-[#1A1A1A] border border-[#262626] rounded-[4px] flex flex-col transition-all duration-200 overflow-hidden;
 }
