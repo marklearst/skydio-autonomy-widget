@@ -4,6 +4,16 @@ import { useBreakpoint } from 'hooks'
 
 import type { AutonomyButtonProps } from 'components'
 
+/**
+ * Props for the AutonomyWidget component.
+ * @property actionName - Name of the current mission action
+ * @property time - Remaining or elapsed time (seconds)
+ * @property expanded - Whether the widget is expanded
+ * @property isPaused - Whether the mission is paused
+ * @property onPauseChange - Callback for pause state changes
+ * @property onNameChange - Callback for action name changes
+ * @property buttons - List of button configurations (see AutonomyButtonProps)
+ */
 export interface AutonomyWidgetProps {
   actionName: string
   time: number
@@ -14,6 +24,17 @@ export interface AutonomyWidgetProps {
   buttons?: Omit<AutonomyButtonProps, 'flex'>[]
 }
 
+/**
+ * AutonomyWidget is a UI component for displaying mission controls, action name, timer, and status.
+ *
+ * @param {AutonomyWidgetProps} props - The properties for configuring the widget.
+ * @returns {JSX.Element} The rendered autonomy widget component.
+ *
+ * @remarks
+ * - Provides mission control buttons, timer, and status display.
+ * - Supports expanded/collapsed and paused states.
+ * - Designed for autonomy-related UIs.
+ */
 export const AutonomyWidget: React.FC<AutonomyWidgetProps> = ({
   actionName,
   time,
@@ -46,7 +67,7 @@ export const AutonomyWidget: React.FC<AutonomyWidgetProps> = ({
         onNameChange(!isPausedProp ? 'Mission Paused' : actionName)
       }
     } else {
-      setInternalPaused((prev) => {
+      setInternalPaused((prev: boolean) => {
         const next = !prev
         if (next && onNameChange) setInternalActionName('Mission Paused')
         else if (onNameChange) setInternalActionName(actionName)

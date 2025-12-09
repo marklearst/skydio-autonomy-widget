@@ -1,6 +1,13 @@
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 
+/**
+ * Props for the Tooltip component.
+ * @property targetRect - The DOMRect of the target element
+ * @property children - The tooltip content
+ * @property visible - Whether the tooltip is visible
+ * @property className - Additional CSS classes for the tooltip container
+ */
 interface TooltipProps {
   targetRect: DOMRect | null
   children: React.ReactNode
@@ -8,6 +15,17 @@ interface TooltipProps {
   className?: string
 }
 
+/**
+ * Tooltip displays contextual information when hovering or focusing on a target element.
+ *
+ * @param {TooltipProps} props - The properties for configuring the tooltip.
+ * @returns {JSX.Element | null} The rendered tooltip or null if not visible.
+ *
+ * @remarks
+ * - Positions itself relative to the targetRect.
+ * - Uses a portal for rendering above other content.
+ * - Used for accessibility and UX enhancement.
+ */
 export const Tooltip: React.FC<TooltipProps> = ({
   targetRect,
   children,

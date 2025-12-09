@@ -4,6 +4,14 @@ import { formatTime } from 'utils'
 import { motion, AnimatePresence } from 'framer-motion'
 import { RouteIcon } from 'icons'
 
+/**
+ * Props for the Timer component.
+ * @property duration - Total duration in seconds
+ * @property progress - Optional override for progress (0-1)
+ * @property condensed - Whether to use condensed display
+ * @property state - Timer state ('running' or 'paused')
+ * @property onComplete - Callback when timer completes
+ */
 export interface TimerProps {
   duration: number
   progress?: number
@@ -12,6 +20,17 @@ export interface TimerProps {
   onComplete?: () => void
 }
 
+/**
+ * Timer is a UI component for displaying a countdown or progress timer.
+ *
+ * @param {TimerProps} props - The properties for configuring the timer.
+ * @returns {JSX.Element} The rendered timer component.
+ *
+ * @remarks
+ * - Supports running and paused states.
+ * - Triggers onComplete callback when done.
+ * - Used for mission or task timing in autonomy UIs.
+ */
 export const Timer: React.FC<TimerProps> = ({
   duration,
   progress: progressOverride,
@@ -33,14 +52,22 @@ export const Timer: React.FC<TimerProps> = ({
   const progressOffset =
     circumference * (1 - Math.max(0, Math.min(1, progress)))
 
-  const ringColor =
-    state === 'paused'
+  // Feature flag: set to true to enable yellow/red ring logic
+  const ENABLE_RING_WARNINGS = false
+
+  // Current logic: only gray for paused, white otherwise
+  // --- Future logic: enable if client wants yellow/red warnings ---
+  const ringColor = ENABLE_RING_WARNINGS
+    ? state === 'paused'
       ? '#666666'
       : progress <= 0.1
       ? '#ff3b30'
       : progress <= 0.5
       ? '#ffd600'
       : '#fff'
+    : state === 'paused'
+    ? '#666666'
+    : '#fff'
   const display = formatTime(remaining)
   // Increase font size for 5+ char displays by 1px
   const fontSize = display.length >= 5 ? 7.5 : display.length === 4 ? 3 : 13
@@ -51,30 +78,29 @@ export const Timer: React.FC<TimerProps> = ({
   const [phase, setPhase] = useState<'showTime' | 'crossfade' | 'showIcon'>(
     'showTime'
   )
-  // const [settled, setSettled] = useState(false)
-  // const [firstLoad, setFirstLoad] = useState(true)
 
   const shouldForceTime = state === 'paused' || remaining <= 0
 
   useEffect(() => {
+    let timeout: ReturnType<typeof setTimeout>
     if (shouldForceTime) {
       setPhase('showTime')
-      // setSettled(false)
-      return
+      return () => {
+        if (timeout !== undefined) clearTimeout(timeout)
+      }
     }
-
-    let timeout: NodeJS.Timeout | undefined
 
     if (phase === 'showTime') {
       timeout = setTimeout(() => setPhase('crossfade'), 6000)
     } else if (phase === 'crossfade') {
       timeout = setTimeout(() => {
         setPhase('showIcon')
-        // setSettled(true)
       }, 200)
     }
 
-    return () => timeout && clearTimeout(timeout)
+    return () => {
+      if (timeout !== undefined) clearTimeout(timeout)
+    }
   }, [phase, shouldForceTime])
 
   return (

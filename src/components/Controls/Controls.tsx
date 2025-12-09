@@ -2,6 +2,11 @@ import { AutonomyButton } from '../AutonomyButton'
 import type { AutonomyButtonProps } from 'components'
 import type { IconName } from 'icons'
 
+/**
+ * Props for the Controls component.
+ * @property buttons - Array of button configs (see AutonomyButtonProps)
+ * @property className - Additional CSS classes for the controls container
+ */
 export interface ControlsProps {
   buttons?: Omit<AutonomyButtonProps, 'flex'>[]
   className?: string
@@ -36,6 +41,16 @@ const defaultButtons: Omit<AutonomyButtonProps, 'flex'>[] = [
   },
 ]
 
+/**
+ * Controls is a UI component for rendering a group of directional and action buttons.
+ *
+ * @param {ControlsProps} props - The properties for configuring the controls.
+ * @returns {JSX.Element} The rendered controls component.
+ *
+ * @remarks
+ * - Renders a set of default or custom buttons for mission control.
+ * - Designed for use in autonomy or navigation UIs.
+ */
 export const Controls: React.FC<ControlsProps> = ({
   buttons = defaultButtons,
   className = '',
