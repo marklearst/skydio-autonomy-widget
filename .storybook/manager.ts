@@ -5,7 +5,7 @@ addons.register('force-default-story', () => {
   addons.getChannel().on('storyRendered', () => {
     const hash = window.location.hash
     if (!hash || hash === '#/') {
-      window.location.hash = '#/components-actionwidget--running' // adjust to your story id
+      window.location.hash = '#/components-autonomywidget--running' // adjust to your story id
     }
   })
 })

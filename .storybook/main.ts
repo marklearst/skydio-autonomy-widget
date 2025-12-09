@@ -4,7 +4,7 @@ import svgr from 'vite-plugin-svgr'
 
 const config: StorybookConfig = {
   stories: [
-    '../src/components/ActionWidget/ActionWidget.stories.tsx',
+    '../src/components/AutonomyWidget/AutonomyWidget.stories.tsx',
     '../src/**/*.mdx',
     '../src/**/*.stories.@(js|jsx|mjs|ts|tsx)',
   ],

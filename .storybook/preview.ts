@@ -7,9 +7,9 @@ const preview: Preview = {
     options: {
       storySort: {
         order: [
-          'ActionWidget',
-          'ActionControls',
-          'IconButton',
+          'AutonomyWidget',
+          'Controls',
+          'Button',
           'Timer',
           'StatusMessage',
         ],
