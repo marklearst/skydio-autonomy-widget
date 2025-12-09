@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { Tooltip } from './Tooltip'
-import { IconButton } from '../IconButton/IconButton'
+import { Button } from '../Button/Button'
 
 const meta: Meta<typeof Tooltip> = {
   title: 'Components/Tooltip',
@@ -36,7 +36,7 @@ type Story = StoryObj<typeof Tooltip>
 
 export const Basic: Story = {
   render: () => (
-    <IconButton
+    <Button
       icon="PlayIcon"
       ariaLabel="Play"
       variant="play"
@@ -48,7 +48,7 @@ export const Basic: Story = {
 
 export const LongText: Story = {
   render: () => (
-    <IconButton
+    <Button
       icon="CameraIcon"
       ariaLabel="Camera"
       variant="action"
