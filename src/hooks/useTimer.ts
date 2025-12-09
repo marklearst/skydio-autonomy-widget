@@ -1,5 +1,13 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 
+/**
+ * Options for configuring the useTimer hook.
+ *
+ * @property duration - The timer duration in seconds (default: 0)
+ * @property state - The timer state, either 'running' or 'paused' (default: 'running')
+ * @property onComplete - Optional callback invoked when timer reaches 0
+ * @property progressOverride - Optional override for progress value (0-1)
+ */
 export interface UseTimerOptions {
   duration?: number
   state?: 'running' | 'paused'
@@ -7,14 +15,25 @@ export interface UseTimerOptions {
   progressOverride?: number
 }
 
+/**
+ * Custom React hook for creating a countdown timer with progress and reset functionality.
+ *
+ * @param options - Configuration options for the timer (see UseTimerOptions)
+ * @returns An object with remaining time, progress, reset function, and setRemaining function.
+ *
+ * @example
+ * const { remaining, progress, reset } = useTimer({ duration: 60, state: 'running' })
+ */
 export function useTimer({
   duration = 0,
   state = 'running',
   onComplete,
   progressOverride,
 }: UseTimerOptions) {
-  const [remaining, setRemaining] = useState(Math.max(0, Math.min(duration, 3599)))
-  const intervalRef = useRef<NodeJS.Timeout | null>(null)
+  const [remaining, setRemaining] = useState(
+    Math.max(0, Math.min(duration, 3599))
+  )
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   // Sync duration prop
   useEffect(() => {
