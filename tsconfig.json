@@ -7,8 +7,9 @@
       "utils": ["utils"],
       "icons": ["assets/icons"],
     },
+    "types": ["node"],
     "rootDir": "src",
-    "outDir": "dist",
+    "outDir": "dist", // Output directory for compiled files
     "declaration": true, // Only if you want .d.ts files (usually for libraries)
     "declarationDir": "dist/types", // Optional: keep .d.ts files separate
   },

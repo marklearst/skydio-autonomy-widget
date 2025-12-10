@@ -9,7 +9,7 @@ importers:
   .:
     dependencies:
       framer-motion:
-        specifier: ^12.23.3
+        specifier: ^12.23.5
         version: 12.23.5(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       lodash:
         specifier: ^4.17.21
