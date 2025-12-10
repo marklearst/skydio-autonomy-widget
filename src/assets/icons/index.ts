@@ -28,7 +28,7 @@ export const Icons = {
   RouteIcon,
   StopIcon,
   XIcon,
-} as const
+}
 
 // Derive IconName from Icons keys
 export type IconName = keyof typeof Icons
