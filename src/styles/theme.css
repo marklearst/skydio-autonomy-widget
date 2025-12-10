@@ -1,0 +1,88 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif,
+    'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  /* === BUTTON COLORS === */
+  /* Hover border */
+  --color-gray-600: #666;
+  /* Default border, hover background */
+  --color-gray-700: #4d4d4d;
+  /* Default background, clicked border, disabled border */
+  --color-gray-800: #333;
+  /* Clicked background, disabled background */
+  --color-gray-900: #1a1a1a;
+  /* Disabled text */
+  --color-text-tertiary: #808080;
+  /* Primary blue for play/resume buttons */
+  --color-primary-blue: #06c;
+  /* Primary red for stop/danger buttons */
+  --color-primary-red: #ae1e26;
+
+  /* === BUTTON SHADOWS === */
+  /* Default button shadow */
+  --shadow-overlay-100: 0 1px 4px 0 rgba(0, 0, 0, 0.13);
+  /* Hover button shadow */
+  --shadow-overlay-200: 0 4px 10px 0 rgba(0, 0, 0, 0.2);
+
+  /* === BUTTON RADIUS === */
+  /* Border radius for all buttons */
+  --radius-button: 2px;
+
+  /* === CONTROL LAYOUT === */
+  /* Gap between action buttons */
+  --gap-action-button: 8px;
+  /* Fixed width for all buttons */
+  --width-button: 32px;
+  /* Fixed height for all buttons */
+  --height-button: 32px;
+}
+
+/* Reusable component-level utilities */
+@utility control {
+  @apply flex justify-between items-center self-stretch;
+}
+
+@utility actions-container {
+  @apply flex items-center gap-[var(--gap-action-button)] flex-[1_0_0];
+}
+
+@utility btn {
+  /* Base styles */
+  @apply flex justify-center items-center flex-[1_0_0] transition-all duration-150;
+  height: var(--height-button);
+  border-radius: var(--radius-button);
+  border: 1px solid var(--color-gray-700);
+  color: white;
+  background: var(--color-gray-800);
+  box-shadow: var(--shadow-overlay-100);
+
+  /* States */
+  &:hover {
+    border-color: var(--color-gray-600);
+    background: var(--color-gray-700);
+    box-shadow: var(--shadow-overlay-200);
+  }
+
+  &:active {
+    border-color: var(--color-gray-800);
+    background: var(--color-gray-900);
+  }
+
+  &:disabled {
+    color: var(--color-text-tertiary);
+    border-color: var(--color-gray-800);
+    background: var(--color-gray-900);
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.sb-show-main,
+.docs-story {
+  @apply !bg-[#333333];
+}
+
+.autonomy-widget-base {
+  @apply w-[240px] bg-[#1A1A1A] border border-[#262626] rounded-[4px] flex flex-col transition-all duration-200 overflow-hidden;
+}
