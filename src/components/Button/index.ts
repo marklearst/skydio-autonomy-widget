@@ -1,2 +1,2 @@
-export { AutonomyButton } from '../AutonomyButton/AutonomyButton'
-export type { AutonomyButtonProps } from '../AutonomyButton/AutonomyButton'
+export { Button } from './Button'
+export type { ButtonProps } from './Button'

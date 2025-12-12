@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { AutonomyButton } from 'components'
+import { Button } from 'components'
 import type { IconName } from 'icons'
 
-const meta: Meta<typeof AutonomyButton> = {
+const meta: Meta<typeof Button> = {
   title: 'Components/Buttons',
-  component: AutonomyButton,
+  component: Button,
   tags: ['autodocs'],
   parameters: {
     docs: {
@@ -22,8 +22,8 @@ const meta: Meta<typeof AutonomyButton> = {
       control: 'select',
       options: [
         'PlayIcon',
-        'StopIcon',
-        'CameraIcon',
+        'StopSignIcon',
+        'CameraViewfinderIcon',
         'CaretIcon',
         'ArrowLeftIcon',
         'RouteIcon',
@@ -46,23 +46,18 @@ const meta: Meta<typeof AutonomyButton> = {
     },
     tooltip: { control: 'text', description: 'Tooltip text on hover.' },
     flex: { control: 'boolean', description: 'Enable flex-1 styling.' },
-    iconRotation: {
-      control: 'select',
-      options: ['', 'rotate-90', 'rotate-180', 'rotate-270'],
-      description: 'Icon rotation.',
-    },
     disabled: { control: 'boolean', description: 'Disable the button.' },
   },
 }
 
 export default meta
-type Story = StoryObj<typeof AutonomyButton>
+type Story = StoryObj<typeof Button>
 
 export const IconOnly: Story = {
   args: {
-    icon: 'PlayIcon',
+    icon: 'XSquareIcon' as IconName,
     ariaLabel: 'Play',
-    variant: 'play',
+    variant: 'action',
     size: 32,
   },
 }
@@ -73,18 +68,16 @@ export const TextOnly: Story = {
     ariaLabel: 'Exit Mission',
     variant: 'action',
     size: 'auto',
-    buttonStyle: 'px-2.5',
   },
 }
 
 export const IconAndText: Story = {
   args: {
-    icon: 'XIcon' as IconName,
+    icon: 'XSquareIcon' as IconName,
     label: 'Button',
     ariaLabel: 'Button',
     variant: 'action',
     size: 'auto',
-    buttonStyle: 'px-2.5',
   },
 }
 
@@ -92,23 +85,23 @@ export const Play: Story = {
   args: {
     icon: 'PlayIcon' as IconName,
     ariaLabel: 'Play',
-    variant: 'play',
+    variant: 'play-borderless',
     size: 32,
   },
 }
 
 export const Stop: Story = {
   args: {
-    icon: 'StopIcon' as IconName,
+    icon: 'StopSignIcon' as IconName,
     ariaLabel: 'Stop',
-    variant: 'stop',
+    variant: 'stop-borderless',
     size: 32,
   },
 }
 
 export const Camera: Story = {
   args: {
-    icon: 'CameraIcon' as IconName,
+    icon: 'CameraViewfinderIcon' as IconName,
     ariaLabel: 'Camera',
     variant: 'action',
     size: 32,
@@ -117,20 +110,19 @@ export const Camera: Story = {
 
 export const Expand: Story = {
   args: {
-    icon: 'CaretIcon' as IconName,
+    icon: 'ChevronDownIcon' as IconName,
     ariaLabel: 'Expand',
-    variant: 'caret',
+    variant: 'caret-borderless',
     size: 32,
   },
 }
 
 export const Collapse: Story = {
   args: {
-    icon: 'CaretIcon' as IconName,
+    icon: 'ChevronUpIcon' as IconName,
     ariaLabel: 'Collapse',
-    variant: 'caret',
+    variant: 'caret-borderless',
     size: 32,
-    iconRotation: 'rotate-180',
   },
 }
 
@@ -148,7 +140,7 @@ export const WithTooltip: Story = {
   args: {
     icon: 'PlayIcon' as IconName,
     ariaLabel: 'Play',
-    variant: 'play',
+    variant: 'play-borderless',
     size: 32,
     tooltip: 'Start the action',
   },
