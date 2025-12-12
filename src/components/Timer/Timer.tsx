@@ -1,22 +1,29 @@
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { useTimer } from 'hooks'
 import { formatTime } from 'utils'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Tooltip } from 'components'
 import { RouteIcon } from 'icons'
 
 /**
  * Props for the Timer component.
  * @property duration - Total duration in seconds
  * @property progress - Optional override for progress (0-1)
- * @property condensed - Whether to use condensed display
  * @property state - Timer state ('running' or 'paused')
+ * @property icon - React component for the timer icon (defaults to RouteIcon)
+ * @property tooltip - Tooltip text for compact mode
  * @property onComplete - Callback when timer completes
  */
 export interface TimerProps {
   duration: number
   progress?: number
-  condensed?: boolean
   state?: 'running' | 'paused'
+  icon?: React.ComponentType<{
+    width?: number
+    height?: number
+    className?: string
+  }>
+  tooltip?: string
   onComplete?: () => void
 }
 
@@ -34,8 +41,9 @@ export interface TimerProps {
 export const Timer: React.FC<TimerProps> = ({
   duration,
   progress: progressOverride,
-  condensed = false,
   state = 'running',
+  icon: IconComponent = RouteIcon,
+  tooltip,
   onComplete,
 }) => {
   const { remaining, progress } = useTimer({
@@ -103,11 +111,13 @@ export const Timer: React.FC<TimerProps> = ({
     }
   }, [phase, shouldForceTime])
 
-  return (
+  const timerElement = (
     <div className="relative flex items-center justify-center w-8 h-8">
       <svg
         width={size}
-        height={size}>
+        height={size}
+        role="img"
+        aria-label={`Timer: ${display} remaining`}>
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -129,49 +139,84 @@ export const Timer: React.FC<TimerProps> = ({
           transform={`rotate(-90 ${size / 2} ${size / 2})`}
         />
       </svg>
-      {!condensed && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <AnimatePresence mode="wait">
-            {phase === 'showTime' && (
-              <motion.span
-                key="time"
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                transition={{
-                  opacity: { duration: 0.3, ease: 'easeInOut' },
-                  y: { type: 'spring', stiffness: 200, damping: 28 },
-                }}
-                className="font-sans font-bold text-white text-center select-none absolute"
-                style={{
-                  fontSize: `clamp(${fontSize}px, ${size * fontScale}px, 16px)`,
-                  lineHeight: '10px',
-                }}
-                role="timer"
-                aria-live="polite">
-                {display}
-              </motion.span>
-            )}
-            {phase === 'showIcon' && (
-              <motion.span
-                key="icon"
-                initial={{ opacity: 0, scale: 0.3 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.3 }}
-                transition={{ duration: 0.3, ease: 'easeInOut' }}
-                className="flex items-center justify-center absolute"
-                style={{ width: 16, height: 16 }}
-                aria-hidden="true">
-                <RouteIcon
-                  width={16}
-                  height={16}
-                  className="text-white"
-                />
-              </motion.span>
-            )}
-          </AnimatePresence>
-        </div>
-      )}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <AnimatePresence mode="sync">
+          {phase === 'showTime' && (
+            <motion.span
+              key="time"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{
+                opacity: { duration: 0.3, ease: 'easeInOut' },
+                y: { type: 'spring', stiffness: 200, damping: 28 },
+              }}
+              className="font-sans font-bold text-white text-center select-none absolute"
+              style={{
+                fontSize: `clamp(${fontSize}px, ${size * fontScale}px, 16px)`,
+                lineHeight: '10px',
+              }}
+              role="timer"
+              aria-live="polite">
+              {display}
+            </motion.span>
+          )}
+          {phase === 'showIcon' && (
+            <motion.span
+              key="icon"
+              initial={{ opacity: 0, scale: 0.3 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.3 }}
+              transition={{ duration: 0.3, ease: 'easeInOut' }}
+              className="flex items-center justify-center absolute"
+              style={{ width: 16, height: 16 }}
+              aria-hidden="true">
+              <IconComponent
+                width={16}
+                height={16}
+                className="text-white"
+              />
+            </motion.span>
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   )
+
+  const timerRef = useRef<HTMLDivElement>(null)
+  const [showTooltip, setShowTooltip] = useState(false)
+  const [targetRect, setTargetRect] = useState<DOMRect | null>(null)
+
+  const handleMouseEnter = () => {
+    if (tooltip && timerRef.current) {
+      setTargetRect(timerRef.current.getBoundingClientRect())
+      setShowTooltip(true)
+    }
+  }
+
+  const handleMouseLeave = () => {
+    setShowTooltip(false)
+  }
+
+  // Return with tooltip wrapper if tooltip provided
+  if (tooltip) {
+    return (
+      <>
+        <div
+          ref={timerRef}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}>
+          {timerElement}
+        </div>
+        <Tooltip
+          targetRect={targetRect}
+          visible={showTooltip}
+          className="z-50">
+          {tooltip}
+        </Tooltip>
+      </>
+    )
+  }
+
+  return timerElement
 }
