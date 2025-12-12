@@ -1,42 +1,36 @@
-import { AutonomyButton } from '../AutonomyButton'
-import type { AutonomyButtonProps } from 'components'
+import { Button } from 'components'
+import type { ButtonProps } from 'components'
 import type { IconName } from 'icons'
 
 /**
  * Props for the Controls component.
- * @property buttons - Array of button configs (see AutonomyButtonProps)
+ * @property buttons - Array of button configs (see ButtonProps)
  * @property className - Additional CSS classes for the controls container
  */
 export interface ControlsProps {
-  buttons?: Omit<AutonomyButtonProps, 'flex'>[]
+  buttons?: Omit<ButtonProps, 'flex'>[]
   className?: string
 }
 
-const defaultButtons: Omit<AutonomyButtonProps, 'flex'>[] = [
+const defaultButtons: Omit<ButtonProps, 'flex'>[] = [
   {
     icon: 'ArrowLeftIcon' as IconName,
     ariaLabel: 'Go Left',
-    buttonStyle: 'border border-[#4D4D4D]',
     variant: 'action',
   },
   {
     icon: 'CaretIcon' as IconName,
     ariaLabel: 'Left',
-    buttonStyle: 'border border-[#4D4D4D]',
-    iconRotation: 'rotate-90',
     variant: 'action',
   },
   {
     icon: 'CaretIcon' as IconName,
     ariaLabel: 'Right',
-    buttonStyle: 'border border-[#4D4D4D]',
-    iconRotation: 'rotate-270',
     variant: 'action',
   },
   {
-    icon: 'CameraIcon' as IconName,
+    icon: 'CameraViewfinderIcon' as IconName,
     ariaLabel: 'Camera',
-    buttonStyle: 'border border-[#4D4D4D]',
     variant: 'action',
   },
 ]
@@ -61,10 +55,11 @@ export const Controls: React.FC<ControlsProps> = ({
     role="toolbar"
     aria-label="Controls">
     {buttons.map((btn, i) => (
-      <AutonomyButton
+      <Button
         key={`${btn.ariaLabel}-${i}`}
         {...btn}
         flex
+        ariaLabel={btn.ariaLabel}
       />
     ))}
   </div>

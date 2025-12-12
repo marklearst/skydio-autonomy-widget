@@ -36,30 +36,24 @@ export const Default: Story = {
   args: {
     buttons: [
       {
-        icon: 'ArrowLeftIcon',
+        icon: 'ArrowTurnDownLeftIcon',
         ariaLabel: 'Go Left',
         variant: 'action',
-        buttonStyle: 'border border-[#4D4D4D]',
       },
       {
-        icon: 'CaretIcon',
+        icon: 'ChevronLeftIcon',
         ariaLabel: 'Left',
         variant: 'action',
-        buttonStyle: 'border border-[#4D4D4D]',
-        iconRotation: 'rotate-90',
       },
       {
-        icon: 'CaretIcon',
+        icon: 'ChevronRightIcon',
         ariaLabel: 'Right',
         variant: 'action',
-        buttonStyle: 'border border-[#4D4D4D]',
-        iconRotation: 'rotate-270',
       },
       {
-        icon: 'CameraIcon',
+        icon: 'CameraViewfinderIcon',
         ariaLabel: 'Camera',
         variant: 'action',
-        buttonStyle: 'border border-[#4D4D4D]',
       },
     ],
   },
@@ -69,18 +63,16 @@ export const Disabled: Story = {
   args: {
     buttons: [
       {
-        icon: 'ArrowLeftIcon',
-        ariaLabel: 'Go Left',
+        icon: 'ChevronLeftIcon',
+        ariaLabel: 'Left',
         variant: 'action',
         disabled: true,
-        buttonStyle: 'border border-[#4D4D4D]',
       },
       {
-        icon: 'CameraIcon',
-        ariaLabel: 'Camera',
+        icon: 'ChevronRightIcon',
+        ariaLabel: 'Right',
         variant: 'action',
         disabled: true,
-        buttonStyle: 'border border-[#4D4D4D]',
       },
     ],
   },
@@ -90,24 +82,9 @@ export const SingleButton: Story = {
   args: {
     buttons: [
       {
-        icon: 'XIcon',
+        label: 'Message',
         ariaLabel: 'Close',
         variant: 'action',
-        buttonStyle: 'border border-[#4D4D4D]',
-      },
-    ],
-  },
-}
-
-export const CustomStyles: Story = {
-  args: {
-    className: 'bg-gray-800 p-4 rounded-md',
-    buttons: [
-      {
-        icon: 'RouteIcon',
-        ariaLabel: 'Route',
-        variant: 'action',
-        size: 'auto',
       },
     ],
   },
