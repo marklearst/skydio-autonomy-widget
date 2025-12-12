@@ -35,9 +35,13 @@ export function useTimer({
   )
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  // Sync duration prop
+  // Only reset timer if duration actually changes value
+  const prevDurationRef = useRef(duration)
   useEffect(() => {
-    setRemaining(Math.max(0, Math.min(duration, 3599)))
+    if (prevDurationRef.current !== duration) {
+      setRemaining(Math.max(0, Math.min(duration, 3599)))
+      prevDurationRef.current = duration
+    }
   }, [duration])
 
   // Countdown effect
