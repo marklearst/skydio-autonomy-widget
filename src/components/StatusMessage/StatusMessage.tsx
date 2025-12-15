@@ -16,14 +16,14 @@ export interface StatusMessageProps {
  *
  * @remarks
  * - Used for live status updates or feedback in autonomy UIs.
- * - Truncates long messages for compact display.
+ * - Text spans available width and hides overflow without truncation ellipsis.
  */
 export const StatusMessage: React.FC<StatusMessageProps> = ({
   message,
   className = '',
 }) => (
   <div
-    className={`text-white font-sans font-semibold text-sm leading-5 truncate max-w-[107px] ${className}`}
+    className={`text-white font-sans font-semibold text-[13px] leading-5 overflow-hidden whitespace-nowrap ${className}`}
     role="status"
     aria-live="polite">
     {message}

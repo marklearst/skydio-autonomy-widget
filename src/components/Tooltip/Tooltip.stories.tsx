@@ -49,7 +49,7 @@ export const Basic: Story = {
 export const LongText: Story = {
   render: () => (
     <Button
-      icon="CameraIcon"
+      icon="CameraViewfinderIcon"
       ariaLabel="Camera"
       variant="action"
       size={32}

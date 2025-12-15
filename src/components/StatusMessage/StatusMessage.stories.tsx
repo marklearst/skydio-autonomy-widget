@@ -32,7 +32,7 @@ export const Default: Story = {
 
 export const LongMessage: Story = {
   args: {
-    message: 'Navigating to Destination Point Alpha with Extended Description',
+    message: 'Navigating to Destination Point',
   },
 }
 
