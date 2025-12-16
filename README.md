@@ -5,38 +5,20 @@ A React-based, highly composable widget system for Skydio’s “Rivit” design
 
 ## 🚀 Full Feature List
 
-- **Action-Driven Architecture**: Central, declarative config (`ACTION_CONFIGS`) powers all UI, ensuring Figma parity and rapid extensibility.
-- **Context-Based State Management**: Unified state/context provider for all widget state, actions, and derived UI.
+- **Action-Driven Architecture**: Central, declarative config (`ACTION_CONFIGS`) powers all UI, ensuring rapid extensibility.
+- **Config-Driven Everything**: All actions, icons, and controls are mapped in `AutonomyWidget.configs.ts`, making UI parity with Figma effortless.
 - **Configurable Button Sets**: Each action defines its own button set, icon, tooltip, and label—fully customizable.
 - **Dynamic Timer with Icon Swap**: Circular countdown ring with animated icon transitions, responsive to state and action.
 - **OrbitSlider**: Custom slider with dual progress indicators, chevron controls, and locked distance display for orbit mode.
 - **Responsive Layout**: Compact mode (mobile) and expanded mode (desktop) with automatic adaptation.
-- **Status Message**: Dynamic, expandable message area for mission status, errors, and notifications.
+- **Status Message**: Dynamic, expandable message area for mission status.
 - **Figma-Exported SVG Icon Library**: All icons are Figma-exported SVGs, imported as React components with full theming and accessibility support.
-- **Design Tokens & Tailwind v4**: Themeable via CSS custom properties and Tailwind tokens for colors, radii, and typography.
-- **Accessible by Default**: Semantic markup, keyboard navigation, ARIA labels, and accessible tooltips.
-- **Storybook Coverage**: Every component, state, and edge case is documented and testable in Storybook.
 - **API-Like Integration**: Emulates a UI API for remote control, state sync, event hooks, and analytics.
 - **Composable Barrel Architecture**: All modules, icons, and components are re-exported via directory `index.ts` for clean, scalable imports.
-- **Dark/Light Theme Support**: Easily toggle between light and dark modes with design tokens.
 - **Mission Grouping Logic**: Supports Waypoint, RTD, Orbit, Paused, Tracking, and more, each with unique UI behaviors.
-- **Live Design Token Previews**: See and test every color, radius, and font in Storybook.
 - **Extensible for Future Missions**: Add new actions, icons, or control sets in minutes.
 
 ---
-
-## 🏛️ Stout Architecture & Component UI
-
-The AutonomyWidget is engineered for scale, clarity, and design system rigor. Every component is a pure, dumb UI building block, orchestrated by a context-driven provider and a single source-of-truth config. This ensures:
-
-- **Separation of Concerns**: UI components never hold business logic; all state and behavior are injected via context and config.
-- **Pure Renderer Philosophy**: Components render only what they're told—no hidden state, no side effects.
-- **Config-Driven Everything**: All actions, icons, and controls are mapped in `AutonomyWidget.configs.ts`, making UI parity with Figma effortless.
-- **Atomic & Composable**: Components are small, focused, and designed to be composed for complex UIs.
-- **Config-Driven**: All mission logic, icons, and controls are managed via a single source-of-truth config for easy extension and maintenance.
-- **Barrel Exports**: Every directory exports a clean interface via `index.ts`, so imports are always intuitive and scalable.
-- **Atomic Design**: Components are small, focused, and composable—ideal for rapid prototyping and robust production use.
-- **TypeScript First**: Every prop, state, and config is strongly typed for confidence and safety.
 
 ### Component UI Map
 
@@ -61,35 +43,6 @@ Every component includes a “Docs” tab featuring usage guidelines, prop table
 
 **Controls & Knobs:**
 Use Storybook Controls to interactively adjust props (actions, icons, states) and instantly preview UI updates.
-
----
-
-## 📝 Storybook Design System Documentation
-
-- **Component Stories**: Every component (Button, Timer, Controls, OrbitSlider, StatusMessage, Tooltip) has exhaustive stories for:
-  - All variants (primary, secondary, danger, etc.)
-  - All states (default, active, disabled, loading, etc.)
-  - Responsive behavior (mobile/desktop)
-  - Accessibility features (keyboard, screen reader)
-  - Theming and dark mode
-
-- **AutonomyWidget Stories**:
-  - Stories for every major mission/action (Waypoint, RTD, Orbit, Paused, Tracking, etc.)
-  - Interactive controls for switching mission type, state, and view
-  - Realistic mission flows and error states
-
-- **Design Tokens Documentation**:
-  - Stories and documentation for all design tokens (colors, spacing, radii, typography)
-  - Live preview of theme changes via Storybook controls
-
-- **Usage Recipes**:
-  - Code examples for wrapping with provider, consuming context, and extending configs
-  - Recipes for integrating with APIs, analytics, and custom themes
-
-- **Best Practices**:
-  - Guidelines for adding new actions, icons, or controls
-  - Accessibility requirements for new components
-  - How to maintain Figma parity and update tokens
 
 ---
 
@@ -118,9 +71,7 @@ src/
   assets/
     icons/                          # Figma-exported SVG icons, imported as React components via SVGR
     # other assets (images, fonts)
-  styles/
-    theme.css                       # Tailwind v4 theme, design tokens, color palette
-    # other Tailwind, global, and token files
+  styles/                           # Tailwind and global styles
   types/                            # Shared TypeScript types/interfaces
 ```
 
@@ -155,13 +106,10 @@ import { PlayIcon } from './assets/icons'
 
 ## 🧑‍💻 Development Guidelines
 
-- All UI components documented in Storybook.
 - Use the shared `IconButton` for all interactive autonomy icons (including expand/collapse).
 - Responsive by default: minimal UI on mobile, full controls on desktop.
 - Exports via `index.ts` for each component folder.
 - Prefer composable patterns (children, flexible props).
-- Key UI states must have a corresponding Storybook story.
-- Follow project ESLint and Prettier configs.
 
 ---
 
@@ -273,14 +221,7 @@ useEffect(() => {
 }, [drone.status]);
 ```
 
-#### 5. Custom Theming
-
-Override theme tokens or Tailwind classes for brand integration:
-
-- Edit `src/styles/theme.css` to change color palette, radii, or typography.
-- Use Tailwind's `@apply` to add utility classes to your own components.
-
-#### 6. Consuming Derived UI State
+#### 5. Consuming Derived UI State
 
 The context exposes derived fields (e.g., current config, button set, timer icon) for advanced UI composition:
 
@@ -359,23 +300,11 @@ useEffect(() => {
 
 ## 🎨 Tailwind CSS
 
-This project leverages the full power of [Tailwind CSS](https://tailwindcss.com/) for all styling, layout, and design system implementation. Our setup combines the core `tailwindcss` framework with the official [`@tailwindcss/vite`](https://tailwindcss.com/docs/guides/vite) plugin, ensuring lightning-fast builds, instant hot-reloading, and seamless integration with Vite and Storybook.
-
-- **Atomic Design Tokens:**
-  - All colors, spacing, typography, and radii are managed via Tailwind's config and extended in `src/styles/theme.ts` for consistency and rapid theming.
-- **Utility-First Workflow:**
-  - Components are styled exclusively with Tailwind utility classes, ensuring a scalable and maintainable UI foundation.
-- **Zero Custom CSS:**
-  - No custom CSS is written except for global resets or rare edge cases. All visual rules are encoded in Tailwind for clarity and portability.
-- **Storybook Integration:**
-  - Tailwind is fully loaded in Storybook via `.storybook/preview.ts` for pixel-perfect component previews and documentation.
-- **Best Practices:**
-  - Responsive, state, and dark mode variants are used throughout for robust, accessible, and adaptive UI.
-  - All new components and UI states are built and documented using Tailwind conventions.
+This project uses [`@tailwindcss/vite`](https://tailwindcss.com/docs/guides/vite) plugin for fast builds and seamless Storybook integration.
 
 > **Why Tailwind?**
 >
-> Tailwind CSS enables rapid prototyping, strict design system adherence, and effortless scaling from MVP to enterprise. By codifying design tokens and using atomic utilities, we ensure every pixel is intentional and every component is consistent—no matter how complex the UI becomes.
+> Tailwind CSS enables rapid prototyping, strict design system adherence, and effortless scaling from MVP to enterprise.
 
 ---
 
@@ -385,24 +314,12 @@ This project uses [Storybook v9](https://storybook.js.org/) as the single source
 
 - **Vite Integration:**
   - Storybook is configured to run with Vite for fast builds and instant feedback.
-- **Tailwind Support:**
-  - All Tailwind CSS styles are loaded in Storybook for perfect design fidelity.
 - **Component-Driven:**
   - Every UI component and key state is documented as a Storybook story, supporting rapid prototyping and stakeholder review.
-- **Accessibility & Testing:**
-  - Addons like `@storybook/addon-a11y` and `@storybook/addon-vitest` are included for accessibility checks and interactive testing.
 
 > **Why Storybook?**
 >
 > Storybook enables scalable, collaborative UI development. Designers, engineers, and PMs can all review and validate components in isolation, ensuring quality and consistency before integration.
-
----
-
-## 🛠 Linting & Formatting
-
-- ESLint with TypeScript and React rules.
-- Prettier for formatting (`.prettierrc`).
-- See `eslint.config.js` for configuration.
 
 ---
 
@@ -415,12 +332,11 @@ All code and deliverables are the property of Mark Learst, Inc. and provided und
 
 ## 📝 Changelog
 
-### v2.0.0 (2025-07-28)
+### v1.1.0 (2025-07-28)
 - Full config-driven, context/provider architecture
 - Unified `AutonomyWidgetProvider` and state hook
 - Central `ACTION_CONFIGS` for all UI logic
 - Figma-exported SVG icon system
-- Tailwind v4 and design tokens for full theming
 - OrbitSlider with dual indicators and chevron controls
 - Pure renderer component structure, barrel exports
 - Complete Storybook coverage for all states and tokens
@@ -437,9 +353,7 @@ All code and deliverables are the property of Mark Learst, Inc. and provided und
 Use PascalCase for components, camelCase for props, and kebab-case for file names.
 
 **Commit Messages:**
-Follow [Conventional Commits](https://www.conventionalcommits.org/) for all PRs.
-
-> **Tip:** See the "Best Practices" and "Storybook Design System Documentation" sections above for architectural and UI guidelines.
+Follow [Conventional Commits](https://www.conventionalcommits.org/) for all commits/PRs.
 
 ---
 
