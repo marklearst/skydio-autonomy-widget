@@ -1,15 +1,47 @@
+import { useEffect, useState } from 'react'
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { AutonomyWidget } from 'components'
+import { AutonomyWidget } from './AutonomyWidget'
+import { AutonomyWidgetContext } from './AutonomyWidget.context'
+import type { AutonomyWidgetState } from './AutonomyWidget.types'
+import { getAllActions, getActionConfig } from './AutonomyWidget.configs'
 
-const meta: Meta<typeof AutonomyWidget> = {
+// Wrapper component that provides context and syncs with Storybook controls
+const AutonomyWidgetWithProvider = (args: AutonomyWidgetState) => {
+  const [internalState, setInternalState] = useState<AutonomyWidgetState>(args)
+
+  // Sync internal state with Storybook args and update derived fields
+  useEffect(() => {
+    const config = getActionConfig(args.action)
+    const updatedState = {
+      ...args,
+      actionName: config.displayName,
+      timerIcon: config.timerIcon,
+      buttons: config.buttons,
+    }
+    setInternalState(updatedState)
+  }, [args])
+
+  const contextValue = {
+    state: internalState,
+    setState: setInternalState,
+  }
+
+  return (
+    <AutonomyWidgetContext.Provider value={contextValue}>
+      <AutonomyWidget />
+    </AutonomyWidgetContext.Provider>
+  )
+}
+
+const meta: Meta<AutonomyWidgetState> = {
   title: 'Components/AutonomyWidget',
-  component: AutonomyWidget,
+  render: AutonomyWidgetWithProvider,
   tags: ['autodocs'],
   parameters: {
     docs: {
       description: {
         component:
-          'A widget displaying a timer, status, and action controls with pause/resume functionality.',
+          'A context-driven widget displaying a timer, status, and action controls with pause/resume functionality. Must be wrapped in AutonomyWidgetProvider.',
       },
     },
     a11y: {
@@ -27,7 +59,15 @@ const meta: Meta<typeof AutonomyWidget> = {
     },
   },
   argTypes: {
-    actionName: { control: 'text', description: 'Name of the current action.' },
+    action: {
+      control: 'select',
+      options: getAllActions(),
+      description: 'Current action/command type (drives UI dynamically)',
+    },
+    actionName: {
+      control: 'text',
+      description: 'Display name (auto-derived from action)',
+    },
     time: {
       control: { type: 'number', min: 0 },
       description: 'Timer duration in seconds.',
@@ -40,173 +80,127 @@ const meta: Meta<typeof AutonomyWidget> = {
       control: 'boolean',
       description: 'Whether the timer is paused.',
     },
-    onPauseChange: {
-      action: 'pause-changed',
-      description: 'Callback for pause state changes.',
+    buttons: {
+      control: false,
+      description: 'Dynamic buttons (auto-derived from action)',
     },
-    onNameChange: {
-      action: 'action-name-changed',
-      description: 'Callback for action name changes.',
+    timerIcon: {
+      control: false,
+      description: 'Timer icon (auto-derived from action)',
     },
   },
 }
 
 export default meta
-type Story = StoryObj<typeof AutonomyWidget>
+type Story = StoryObj<AutonomyWidgetState>
 
-export const Running: Story = {
+// Action-driven stories showcasing different command types
+export const Default: Story = {
   args: {
+    action: 'waypoint-mission',
     actionName: 'Flying to Point 1',
-    time: 407,
+    time: 90,
+    expanded: false,
+    isPaused: false, // Toggle this to see dynamic button behavior!
+    buttons: [],
+    timerIcon: 'RouteIcon',
   },
-  render: (args, { updateArgs }) => (
-    <AutonomyWidget
-      {...args}
-      onPauseChange={(paused) => updateArgs({ isPaused: paused })}
-      onNameChange={(name) => updateArgs({ actionName: name })}
-    />
-  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Interactive example showing dynamic button behavior. Toggle "isPaused" to see the button switch between red STOP (active) and blue PLAY (paused).',
+      },
+    },
+  },
+}
+
+export const FlyingToPoint: Story = {
+  args: {
+    action: 'returning-to-dock',
+    actionName: 'Returning to Dock',
+    time: 240,
+    expanded: false,
+    isPaused: false,
+    buttons: [],
+    timerIcon: 'NavigationIcon',
+  },
+}
+
+export const OrbitMode: Story = {
+  args: {
+    action: 'orbiting',
+    actionName: 'Orbiting',
+    time: 120,
+    expanded: true, // Show expanded to see the slider
+    isPaused: false,
+    buttons: [],
+    timerIcon: 'OrbitIcon',
+    // Add progress for testing the orbit progress tracker
+    orbitProgress: 80, // 65% through the orbit
+  },
+  argTypes: {
+    orbitProgress: {
+      control: { type: 'range', min: 0, max: 100, step: 1 },
+      description: 'Orbit completion progress (0-100%)',
+    },
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Orbit mode with distance slider control. The blue circle shows distance setting (controlled by chevrons), while the white handle shows orbit progress. Toggle "isPaused" to see the slider in both active and paused states. Use the "orbitProgress" control to simulate orbit completion.',
+      },
+    },
+  },
 }
 
 export const Paused: Story = {
   args: {
+    action: 'mission-paused',
     actionName: 'Mission Paused',
     time: 407,
+    expanded: false,
     isPaused: true,
+    buttons: [],
+    timerIcon: 'NavigationIcon',
   },
-  render: (args, { updateArgs }) => (
-    <AutonomyWidget
-      {...args}
-      onPauseChange={(paused) => updateArgs({ isPaused: paused })}
-      onNameChange={(name) => updateArgs({ actionName: name })}
-    />
-  ),
 }
 
+// Add back stories that Storybook is looking for
 export const Expanded: Story = {
   args: {
+    action: 'waypoint-mission',
     actionName: 'Flying to Point 1',
     time: 407,
     expanded: true,
+    isPaused: false,
+    buttons: [],
+    timerIcon: 'NavigationIcon',
   },
-  render: (args, { updateArgs }) => (
-    <AutonomyWidget
-      {...args}
-      onPauseChange={(paused) => updateArgs({ isPaused: paused })}
-      onNameChange={(name) => updateArgs({ actionName: name })}
-    />
-  ),
 }
 
-// export const Compact: Story = {
-//   args: {
-//     actionName: 'Flying to Point 1',
-//     time: 60,
-//   },
-//   parameters: {
-//     viewport: { defaultViewport: 'mobile1' }, // <1280px
-//   },
-//   render: (args, { updateArgs }) => (
-//     <AutonomyWidget
-//       {...args}
-//       onPauseChange={(paused) => updateArgs({ isPaused: paused })}
-//       onNameChange={(name) => updateArgs({ actionName: name })}
-//     />
-//   ),
-// }
-
-export const ZeroDuration: Story = {
+export const Tracking: Story = {
   args: {
-    actionName: 'Idle',
-    time: 0,
+    action: 'tracking-subject',
+    actionName: 'Tracking Subject',
+    time: 180,
+    expanded: false,
+    isPaused: false,
+    buttons: [],
+    timerIcon: 'UserIcon',
   },
-  render: (args, { updateArgs }) => (
-    <AutonomyWidget
-      {...args}
-      onPauseChange={(paused) => updateArgs({ isPaused: paused })}
-      onNameChange={(name) => updateArgs({ actionName: name })}
-    />
-  ),
 }
 
-export const SingleButton: Story = {
+// Add back remaining missing stories that Storybook is looking for
+export const Landing: Story = {
   args: {
-    actionName: 'Single Button',
-    time: 90,
-    expanded: true,
-    buttons: [
-      {
-        icon: 'XIcon',
-        ariaLabel: 'Close',
-        variant: 'action',
-        buttonStyle: 'border border-[#4D4D4D]',
-      },
-    ],
-  },
-  render: (args, { updateArgs }) => (
-    <AutonomyWidget
-      {...args}
-      onPauseChange={(paused) => updateArgs({ isPaused: paused })}
-      onNameChange={(name) => updateArgs({ actionName: name })}
-    />
-  ),
-}
-
-export const TwoButtons: Story = {
-  args: {
-    actionName: 'Two Buttons',
+    action: 'landing',
+    actionName: 'Landing',
     time: 120,
-    expanded: true,
-    buttons: [
-      {
-        icon: 'CaretIcon',
-        ariaLabel: 'Left',
-        variant: 'action',
-        buttonStyle: 'border border-[#4D4D4D]',
-        iconRotation: 'rotate-90',
-      },
-      {
-        icon: 'CaretIcon',
-        ariaLabel: 'Right',
-        variant: 'action',
-        buttonStyle: 'border border-[#4D4D4D]',
-        iconRotation: 'rotate-270',
-      },
-    ],
+    expanded: false,
+    isPaused: false,
+    buttons: [],
+    timerIcon: 'ArrowDownToLineIcon',
   },
-  render: (args, { updateArgs }) => (
-    <AutonomyWidget
-      {...args}
-      onPauseChange={(paused) => updateArgs({ isPaused: paused })}
-      onNameChange={(name) => updateArgs({ actionName: name })}
-    />
-  ),
 }
-
-// export const Breakpoint: Story = {
-//   args: {
-//     actionName: 'Testing Breakpoint',
-//     time: 300,
-//   },
-//   parameters: {
-//     viewport: {
-//       viewports: {
-//         small: { name: 'Small', styles: { width: '600px', height: '800px' } },
-//         medium: {
-//           name: 'Medium',
-//           styles: { width: '1280px', height: '800px' },
-//         },
-//         large: { name: 'Large', styles: { width: '1920px', height: '1080px' } },
-//       },
-//       defaultViewport: 'small', // Start with <1280px to test 88px
-//     },
-//     backgrounds: { default: 'dark' },
-//   },
-//   render: (args, { updateArgs }) => (
-//     <AutonomyWidget
-//       {...args}
-//       onPauseChange={(paused) => updateArgs({ isPaused: paused })}
-//       onNameChange={(name) => updateArgs({ actionName: name })}
-//     />
-//   ),
-// }
