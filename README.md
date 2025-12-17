@@ -326,6 +326,7 @@ This project uses [Storybook v9](https://storybook.js.org/) as the single source
 ## 📄 License
 
 All code and deliverables are the property of Skydio, Inc.
+© 2025 Skydio, Inc. — All rights reserved.
 
 ---
 
