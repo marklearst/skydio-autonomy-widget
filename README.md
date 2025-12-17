@@ -325,8 +325,7 @@ This project uses [Storybook v9](https://storybook.js.org/) as the single source
 
 ## 📄 License
 
-All code and deliverables are the property of Mark Learst, Inc. and provided under contract.
-**Ownership is retained by Mark Learst, Inc. until full payment is received.**
+All code and deliverables are the property of Skydio, Inc.
 
 ---
 
