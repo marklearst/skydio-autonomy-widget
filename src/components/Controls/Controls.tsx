@@ -1,36 +1,36 @@
-import { Button } from 'components'
-import type { ButtonProps } from 'components'
-import type { IconName } from 'icons'
+import { forwardRef, type HTMLAttributes } from 'react'
+import { Button } from '../Button/Button'
+import type { ButtonProps } from '../Button/Button'
 
 /**
  * Props for the Controls component.
  * @property buttons - Array of button configs (see ButtonProps)
  * @property className - Additional CSS classes for the controls container
  */
-export interface ControlsProps {
+export interface ControlsProps extends HTMLAttributes<HTMLDivElement> {
   buttons?: Omit<ButtonProps, 'flex'>[]
   className?: string
 }
 
 const defaultButtons: Omit<ButtonProps, 'flex'>[] = [
   {
-    icon: 'ArrowLeftIcon' as IconName,
-    ariaLabel: 'Go Left',
+    icon: 'ArrowTurnDownLeftIcon',
+    ariaLabel: 'Refresh waypoint',
     variant: 'action',
   },
   {
-    icon: 'CaretIcon' as IconName,
-    ariaLabel: 'Left',
+    icon: 'ChevronLeftIcon',
+    ariaLabel: 'Previous waypoint',
     variant: 'action',
   },
   {
-    icon: 'CaretIcon' as IconName,
-    ariaLabel: 'Right',
+    icon: 'ChevronRightIcon',
+    ariaLabel: 'Next waypoint',
     variant: 'action',
   },
   {
-    icon: 'CameraViewfinderIcon' as IconName,
-    ariaLabel: 'Camera',
+    icon: 'CameraViewfinderIcon',
+    ariaLabel: 'Waypoint settings',
     variant: 'action',
   },
 ]
@@ -45,22 +45,29 @@ const defaultButtons: Omit<ButtonProps, 'flex'>[] = [
  * - Renders a set of default or custom buttons for mission control.
  * - Designed for use in autonomy or navigation UIs.
  */
-export const Controls: React.FC<ControlsProps> = ({
+export const Controls = forwardRef<HTMLDivElement, ControlsProps>(function Controls({
   buttons = defaultButtons,
   className = '',
-}) => (
-  <div
-    className={`flex gap-2 ${className}`}
-    style={{ minWidth: 50 }}
-    role="toolbar"
-    aria-label="Controls">
-    {buttons.map((btn, i) => (
-      <Button
-        key={`${btn.ariaLabel}-${i}`}
-        {...btn}
-        flex
-        ariaLabel={btn.ariaLabel}
-      />
-    ))}
-  </div>
-)
+  style,
+  role = 'group',
+  'aria-label': ariaLabel = 'Mission controls',
+  ...nativeProps
+}, ref) {
+  return (
+    <div
+      {...nativeProps}
+      ref={ref}
+      className={`flex gap-2 ${className}`.trim()}
+      style={{ minWidth: 50, ...style }}
+      role={role}
+      aria-label={ariaLabel}>
+      {buttons.map((button, index) => (
+        <Button
+          key={button.id || `${button.ariaLabel || button['aria-label'] || button.label}-${index}`}
+          {...button}
+          flex
+        />
+      ))}
+    </div>
+  )
+})
