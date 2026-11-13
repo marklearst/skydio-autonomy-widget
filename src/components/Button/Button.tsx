@@ -1,19 +1,18 @@
-import React, { useRef, useState, useMemo } from 'react'
+import {
+  forwardRef,
+  useCallback,
+  useMemo,
+  useRef,
+  type ButtonHTMLAttributes,
+} from 'react'
+import { AnimatePresence, motion, useIsPresent, useReducedMotion } from 'framer-motion'
 import * as Icons from 'icons'
 import type { IconName, IconComponentType } from 'icons'
-import { Tooltip } from 'components'
+import { Tooltip } from '../Tooltip/Tooltip'
+import { useTooltipInteraction } from '../Tooltip/useTooltipInteraction'
+import { useMotionTokens } from '../../hooks/useMotionTokens'
 
-/**
- * Button variant options for Button.
- * - 'default': Transparent button
- * - 'stop': Red button for stop actions
- * - 'play': Blue button for play/resume actions
- * - 'action': Gray button for mission actions
- * - 'caret': Caret/expand/collapse button
- * - 'stop-borderless': Red button without border
- * - 'play-borderless': Blue button without border
- * - 'caret-borderless': Transparent caret button without border
- */
+/** The supported action treatments. Borderless variants retain the same semantic color. */
 export type ButtonVariant =
   | 'default'
   | 'stop'
@@ -24,163 +23,142 @@ export type ButtonVariant =
   | 'play-borderless'
   | 'caret-borderless'
 
-/**
- * Supported sizes for Button.
- * - 32: Standard icon button size
- * - 'auto': Flexible width for label buttons
- */
+/** A square control or a content-width control. Touch targets expand on coarse pointers. */
 export type ButtonSize = 32 | 'auto'
 
-/**
- * Props for the Button component.
- * @property icon - Name of the icon to display (from icons barrel)
- * @property label - Optional label text to display next to the icon
- * @property tooltip - Tooltip text shown on hover
- * @property onClick - Click handler for the button
- * @property ariaLabel - Accessibility label for screen readers
- * @property variant - Button style variant
- * @property size - Button size (32 or 'auto')
- * @property flex - Whether the button should flex-grow
- * @property buttonStyle - Custom style classes for the button
- * @property iconRotation - Icon rotation class (for caret/arrow icons)
- * @property disabled - Whether the button is disabled
- */
-export interface ButtonProps {
+/** Native button attributes are passed through; refs target the actual button. */
+export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  /** Optional icon from the shared SVG library. */
   icon?: IconName
+  /** Visible text, or use native `children` for richer content. */
   label?: string
+  /** Help text associated with the button while shown on hover or focus. */
   tooltip?: string
-  onClick?: () => void
-  ariaLabel: string
+  /** Compatibility alias for native `aria-label`. Visible text can also name the button. */
+  ariaLabel?: string
+  /** Visual treatment. @defaultValue 'default' */
   variant?: ButtonVariant
+  /** Fixed square or content width. @defaultValue 32 */
   size?: ButtonSize
+  /** Share available width in a flex parent. @defaultValue false */
   flex?: boolean
-  disabled?: boolean
 }
 
-// Define variant styles for the button
-// These classes can be customized in your CSS
-// or Tailwind config to match your design system
-// They provide visual feedback for different button states
-// such as hover effects and background colors
-// Each variant corresponds to a specific action or state
-const variantClasses: Record<ButtonVariant, string> = {
-  default: 'bg-transparent hover:bg-transparent',
-  play: 'bg-[#0066CC] hover:bg-[#005bb5]',
-  stop: 'bg-[#941920] hover:bg-[#7a1620]',
-  action: 'bg-[#222222] hover:bg-[#444444]',
-  caret: 'bg-transparent hover:bg-[#3A3A3A]',
-  'play-borderless': 'bg-[#0066CC] hover:bg-[#005bb5] !border-0',
-  'stop-borderless': 'bg-[#941920] hover:bg-[#7a1620] !border-0',
-  'caret-borderless': 'bg-transparent hover:bg-[#3A3A3A] !border-0',
-}
-
-/**
- * `Button` is a customizable React button component designed for use in autonomy-related UI controls.
- * It supports displaying an icon, label, and tooltip, and provides accessibility features.
- *
- * @param {ButtonProps} props - The properties for configuring the button.
- * @returns {JSX.Element} The rendered autonomy button component.
- *
- * @remarks
- * - If the specified icon is not found, a warning icon and message are displayed.
- * - Tooltip is shown when the button is hovered or focused.
- * - Accessibility and keyboard navigation are supported.
- */
-export const Button: React.FC<ButtonProps> = ({
+/** Native action control with visible focus, disabled semantics, and dismissible help. */
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button({
   icon,
   label,
+  children,
   tooltip,
-  onClick,
   ariaLabel,
   variant = 'default',
   size = 32,
   flex = false,
   disabled = false,
-}) => {
+  type = 'button',
+  className = '',
+  onMouseEnter,
+  onMouseLeave,
+  onFocus,
+  onBlur,
+  onKeyDown,
+  'aria-label': nativeAriaLabel,
+  'aria-describedby': describedBy,
+  ...nativeProps
+}, forwardedRef) {
   const IconComponent = useMemo(
     () => (icon ? (Icons[icon] as IconComponentType) : null),
     [icon]
   )
   const buttonRef = useRef<HTMLButtonElement>(null)
-  const [hovered, setHovered] = useState(false)
-  const [rect, setRect] = useState<DOMRect | null>(null)
+  const present = useIsPresent()
+  const reducedMotion = useReducedMotion()
+  const timing = useMotionTokens()
+  const help = useTooltipInteraction({ triggerRef: buttonRef, enabled: Boolean(tooltip && !disabled && present) })
+  const tooltipVisible = help.isOpen
+
+  const setRef = useCallback((node: HTMLButtonElement | null) => {
+    buttonRef.current = node
+    if (typeof forwardedRef === 'function') forwardedRef(node)
+    else if (forwardedRef) forwardedRef.current = node
+  }, [forwardedRef])
 
   if (icon && !IconComponent) {
     console.error(`Icon "${icon}" not found in icons barrel.`)
-    return (
-      <span
-        aria-label={ariaLabel}
-        className="text-red-500">
-        ⚠️
-      </span>
-    )
+    return <span aria-label={ariaLabel || nativeAriaLabel} className="text-action-pause">⚠️</span>
   }
 
-  /**
-   * Handles the mouse enter event for the autonomy button.
-   *
-   * - If the button's DOM reference exists and the bounding rectangle (`rect`) is not set,
-   *   it retrieves the button's bounding rectangle and updates the state.
-   * - Sets the hovered state to `true`.
-   */
-  const handleMouseEnter = () => {
-    if (buttonRef.current && !rect) {
-      setRect(buttonRef.current.getBoundingClientRect())
-    }
-    setHovered(true)
-  }
-
-  /**
-   * Handles the mouse leave event for the autonomy button.
-   * Sets the hovered state to false when the mouse leaves the button area.
-   */
-  const handleMouseLeave = () => {
-    setHovered(false)
-  }
+  const content = children ?? label
+  const helpIds = [describedBy, tooltipVisible ? help.tooltipId : undefined].filter(Boolean).join(' ') || undefined
 
   return (
     <>
       <button
-        type="button"
-        ref={buttonRef}
+        {...nativeProps}
+        ref={setRef}
+        type={type}
         disabled={disabled}
-        className={`inline-flex items-center justify-center relative btn
-          ${size === 32 ? 'w-8 h-8' : 'w-auto h-8'}
-          rounded-[2px]
-          transition-all duration-500 ease-in-out
-          ${variantClasses[variant]}
-          ${flex ? 'flex-1' : ''}
-          ${label ? 'px-2' : ''}
-          ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-        aria-label={ariaLabel}
-        onClick={onClick}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        onFocus={handleMouseEnter}
-        onBlur={handleMouseLeave}>
-        {icon && IconComponent && (
-          <IconComponent
-            width={16}
-            height={16}
-            className="pointer-events-none"
-          />
-        )}
-        {label && (
-          <span
-            className={`font-sans font-normal text-[14px] leading-5 text-white select-none ${
-              icon ? 'ml-2' : ''
-            }`}>
-            {label}
+        className={`widget-button ${className}`.trim()}
+        data-variant={variant}
+        data-size={size}
+        data-flex={flex}
+        data-has-label={Boolean(content)}
+        aria-label={ariaLabel || nativeAriaLabel}
+        aria-describedby={helpIds}
+        onMouseEnter={event => {
+          onMouseEnter?.(event)
+          if (!event.defaultPrevented) {
+            help.triggerProps.onMouseEnter()
+          }
+        }}
+        onMouseLeave={event => {
+          onMouseLeave?.(event)
+          if (!event.defaultPrevented) help.triggerProps.onMouseLeave()
+        }}
+        onFocus={event => {
+          onFocus?.(event)
+          if (!event.defaultPrevented) {
+            help.triggerProps.onFocus()
+          }
+        }}
+        onBlur={event => {
+          onBlur?.(event)
+          if (!event.defaultPrevented) help.triggerProps.onBlur()
+        }}
+        onKeyDown={event => {
+          onKeyDown?.(event)
+          if (!event.defaultPrevented) help.triggerProps.onKeyDown(event)
+        }}>
+        {IconComponent && (
+          <span className="widget-button-icon relative inline-flex size-4 shrink-0 pointer-events-none" aria-hidden="true">
+            {reducedMotion ? <IconComponent width={16} height={16} /> : (
+              <AnimatePresence initial={false}>
+                <motion.span
+                  key={icon}
+                  className="absolute inset-0 inline-flex items-center justify-center"
+                  initial={{ opacity: 0, y: 2, scale: 0.9 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -2, scale: 0.9, transition: { duration: timing.fast } }}
+                  transition={{ duration: timing.feedback, ease: timing.ease }}>
+                  <IconComponent width={16} height={16} />
+                </motion.span>
+              </AnimatePresence>
+            )}
           </span>
         )}
+        {content && <span className="widget-button-label">{content}</span>}
       </button>
-      {tooltip && rect && (
+      {tooltip && help.targetRect && (
         <Tooltip
-          targetRect={rect}
-          visible={hovered}>
+          {...help.tooltipProps}
+          id={help.tooltipId}
+          targetRect={help.targetRect}
+          anchorRef={buttonRef}
+          visible={tooltipVisible}
+          onDismiss={help.dismiss}>
           {tooltip}
         </Tooltip>
       )}
     </>
   )
-}
+})

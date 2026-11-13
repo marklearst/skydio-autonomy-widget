@@ -84,38 +84,113 @@
   @apply flex items-center gap-(--gap-action-button) flex-[1_0_0];
 }
 
-@utility btn {
-  /* Base styles */
-  @apply flex justify-center items-center flex-[1_0_0] transition-all duration-150;
-  height: var(--height-button);
+@layer components {
+.widget-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  flex: 0 0 auto;
+  gap: var(--gap-action-button);
+  width: var(--control-size);
+  min-width: var(--control-size);
+  height: var(--control-size);
+  padding: 0;
+  border: 1px solid var(--color-border-control);
   border-radius: var(--radius-button);
-  border: 1px solid var(--color-gray-700);
-  color: white;
-  background: var(--color-gray-800);
-  box-shadow: var(--shadow-overlay-100);
+  color: var(--color-content-primary);
+  background: transparent;
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  font-family: var(--font-sans);
+  transition:
+    background-color var(--duration-fast) ease,
+    border-color var(--duration-fast) ease,
+    color var(--duration-fast) ease;
+}
 
-  /* States */
-  &:hover {
-    border-color: var(--color-gray-600);
-    background: var(--color-gray-700);
-    box-shadow: var(--shadow-overlay-200);
+.widget-button[data-size="auto"] {
+  width: auto;
+}
+
+.widget-button[data-flex="true"] {
+  flex: 1 1 0%;
+}
+
+.widget-button[data-has-label="true"] {
+  padding-inline: 8px;
+}
+
+.widget-button[data-variant="action"] {
+  background: var(--color-surface-raised);
+}
+
+.widget-button[data-variant="play"],
+.widget-button[data-variant="play-borderless"] {
+  background: var(--color-action-resume);
+}
+
+.widget-button[data-variant="stop"],
+.widget-button[data-variant="stop-borderless"] {
+  background: var(--color-action-pause);
+}
+
+.widget-button[data-variant$="-borderless"] {
+  border-color: transparent;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .widget-button:hover:not(:disabled) {
+    border-color: var(--color-border-hover);
   }
 
-  &:active {
-    border-color: var(--color-gray-800);
-    background: var(--color-gray-900);
+  .widget-button[data-variant="action"]:hover:not(:disabled),
+  .widget-button[data-variant="caret"]:hover:not(:disabled),
+  .widget-button[data-variant="caret-borderless"]:hover:not(:disabled) {
+    background: var(--color-surface-hover);
   }
 
-  &:disabled {
-    color: var(--color-text-tertiary);
-    border-color: var(--color-gray-800);
-    background: var(--color-gray-900);
-    opacity: 0.5;
-    cursor: not-allowed;
+  .widget-button[data-variant="play"]:hover:not(:disabled),
+  .widget-button[data-variant="play-borderless"]:hover:not(:disabled) {
+    background: var(--color-action-resume-hover);
+  }
+
+  .widget-button[data-variant="stop"]:hover:not(:disabled),
+  .widget-button[data-variant="stop-borderless"]:hover:not(:disabled) {
+    background: var(--color-action-pause-hover);
+  }
+
+  .widget-button[data-variant$="-borderless"]:hover:not(:disabled) {
+    border-color: transparent;
   }
 }
 
-@layer components {
+.widget-button:active:not(:disabled) {
+  background: var(--color-surface-pressed);
+}
+
+.widget-button:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.widget-button:disabled {
+  color: var(--color-content-disabled);
+  border-color: var(--color-border-subtle);
+  background: var(--color-surface);
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.widget-button-label {
+  font-size: var(--text-control);
+  font-weight: 400;
+  line-height: 20px;
+  white-space: nowrap;
+}
+
 .widget-tooltip {
   width: max-content;
   max-width: min(320px, calc(100vw - 16px));
@@ -142,6 +217,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .widget-button,
   .widget-tooltip {
     animation: none;
     transition: none;

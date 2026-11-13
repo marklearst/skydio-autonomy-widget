@@ -5,7 +5,9 @@ const meta: Meta<typeof Controls> = {
   title: 'Components/Controls',
   component: Controls,
   tags: ['autodocs'],
+  args: { className: '' },
   parameters: {
+    controls: { include: ['buttons'] },
     docs: {
       description: {
         component:
@@ -20,7 +22,8 @@ const meta: Meta<typeof Controls> = {
     buttons: {
       control: 'object',
       description:
-        'Array of button configurations with icon, ariaLabel, and other properties.',
+        'Ordered control definitions. Each button needs an accessible name; icon, label, variant, and disabled state can be set per button.',
+      table: { category: 'Controls', type: { summary: 'Button configuration[]' }, defaultValue: { summary: 'Four directional and camera controls' } },
     },
     className: {
       control: 'text',
@@ -37,17 +40,17 @@ export const Default: Story = {
     buttons: [
       {
         icon: 'ArrowTurnDownLeftIcon',
-        ariaLabel: 'Go Left',
+        ariaLabel: 'Refresh waypoint',
         variant: 'action',
       },
       {
         icon: 'ChevronLeftIcon',
-        ariaLabel: 'Left',
+        ariaLabel: 'Previous waypoint',
         variant: 'action',
       },
       {
         icon: 'ChevronRightIcon',
-        ariaLabel: 'Right',
+        ariaLabel: 'Next waypoint',
         variant: 'action',
       },
       {
@@ -64,13 +67,13 @@ export const Disabled: Story = {
     buttons: [
       {
         icon: 'ChevronLeftIcon',
-        ariaLabel: 'Left',
+        ariaLabel: 'Previous waypoint',
         variant: 'action',
         disabled: true,
       },
       {
         icon: 'ChevronRightIcon',
-        ariaLabel: 'Right',
+        ariaLabel: 'Next waypoint',
         variant: 'action',
         disabled: true,
       },
@@ -82,8 +85,8 @@ export const SingleButton: Story = {
   args: {
     buttons: [
       {
-        label: 'Message',
-        ariaLabel: 'Close',
+        label: 'Exit Mission',
+        ariaLabel: 'Exit Mission',
         variant: 'action',
       },
     ],
