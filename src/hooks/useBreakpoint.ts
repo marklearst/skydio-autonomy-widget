@@ -1,30 +1,18 @@
-import { useState, useEffect } from 'react'
+import { useCallback, useSyncExternalStore } from 'react'
 import throttle from 'lodash/throttle'
 
-/**
- * Custom React hook that returns a boolean indicating if the window width is below a given breakpoint.
- *
- * @param breakpoint - The pixel width to compare against the current window width.
- * @returns {boolean} True if window.innerWidth < breakpoint, otherwise false.
- *
- * @example
- * const isMobile = useBreakpoint(768)
- * if (isMobile) { ... }
- */
+const serverSnapshot = () => false
+const subscribe = (onChange: () => void) => {
+  const handleResize = throttle(onChange, 100)
+  window.addEventListener('resize', handleResize)
+  return () => {
+    window.removeEventListener('resize', handleResize)
+    handleResize.cancel()
+  }
+}
+
+/** Returns whether the browser viewport is below the supplied pixel width. */
 export const useBreakpoint = (breakpoint: number) => {
-  const [isBelowBreakpoint, setIsBelowBreakpoint] = useState(
-    window.innerWidth < breakpoint
-  )
-
-  useEffect(() => {
-    const handleResize = throttle(() => {
-      setIsBelowBreakpoint(window.innerWidth < breakpoint)
-    }, 100)
-
-    window.addEventListener('resize', handleResize)
-
-    return () => window.removeEventListener('resize', handleResize)
-  }, [breakpoint])
-
-  return isBelowBreakpoint
+  const readViewport = useCallback(() => window.innerWidth < breakpoint, [breakpoint])
+  return useSyncExternalStore(subscribe, readViewport, serverSnapshot)
 }

@@ -1,28 +1,29 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
+import type { Dispatch, SetStateAction } from 'react'
 
-/**
- * Options for configuring the useTimer hook.
- *
- * @property duration - The timer duration in seconds (default: 0)
- * @property state - The timer state, either 'running' or 'paused' (default: 'running')
- * @property onComplete - Optional callback invoked when timer reaches 0
- * @property progressOverride - Optional override for progress value (0-1)
- */
+/** Input to a bounded, local countdown. Durations are whole seconds. */
 export interface UseTimerOptions {
+  /** Initial duration, normalized to 0–3,599 seconds. @defaultValue 0 */
   duration?: number
+  /** Pausing preserves remaining time. @defaultValue 'running' */
   state?: 'running' | 'paused'
+  /** Called once when a positive running countdown reaches zero. */
   onComplete?: () => void
+  /** Optional ring fraction; independent of remaining time. */
   progressOverride?: number
 }
 
+const normalizeSeconds = (value: number) =>
+  Number.isFinite(value) ? Math.max(0, Math.min(Math.floor(value), 3599)) : 0
+
 /**
- * Custom React hook for creating a countdown timer with progress and reset functionality.
+ * Counts down locally at one-second intervals. This is not a telemetry clock.
  *
- * @param options - Configuration options for the timer (see UseTimerOptions)
- * @returns An object with remaining time, progress, reset function, and setRemaining function.
- *
- * @example
- * const { remaining, progress, reset } = useTimer({ duration: 60, state: 'running' })
+ * @remarks
+ * A changed effective duration restarts the countdown. `reset` starts a new
+ * run at that duration, even after completion. Initializing or resetting at
+ * zero does not emit completion. Callbacks run outside React state updaters,
+ * so StrictMode cannot replay them as part of its purity checks.
  */
 export function useTimer({
   duration = 0,
@@ -30,64 +31,76 @@ export function useTimer({
   onComplete,
   progressOverride,
 }: UseTimerOptions) {
-  const [remaining, setRemaining] = useState(
-    Math.max(0, Math.min(duration, 3599))
-  )
+  const effectiveDuration = normalizeSeconds(duration)
+  const [remaining, setRemainingState] = useState(effectiveDuration)
+  const [resetVersion, setResetVersion] = useState(0)
+  const remainingRef = useRef(effectiveDuration)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const completedRef = useRef(false)
+  const previousDurationRef = useRef(effectiveDuration)
+  const onCompleteRef = useRef(onComplete)
 
-  // Only reset timer if duration actually changes value
-  const prevDurationRef = useRef(duration)
   useEffect(() => {
-    if (prevDurationRef.current !== duration) {
-      setRemaining(Math.max(0, Math.min(duration, 3599)))
-      prevDurationRef.current = duration
-    }
-  }, [duration])
+    onCompleteRef.current = onComplete
+  }, [onComplete])
 
-  // Countdown effect
-  useEffect(() => {
-    if (intervalRef.current) {
+  const clearTick = useCallback(() => {
+    if (intervalRef.current !== null) {
       clearInterval(intervalRef.current)
+      intervalRef.current = null
     }
+  }, [])
 
-    if (state === 'running' && remaining > 0) {
-      intervalRef.current = setInterval(() => {
-        setRemaining((r) => {
-          if (r <= 1) {
-            clearInterval(intervalRef.current!)
-            if (onComplete) onComplete()
-            return 0
-          }
-          // Clamp to [0, 3599]
-          return Math.max(0, Math.min(r - 1, 3599))
-        })
-      }, 1000)
-    }
+  const setRemaining = useCallback<Dispatch<SetStateAction<number>>>((update) => {
+    const value = typeof update === 'function' ? update(remainingRef.current) : update
+    const next = normalizeSeconds(value)
+    const resumesCompletedRun = remainingRef.current === 0 && next > 0
+    remainingRef.current = next
+    if (next > 0) completedRef.current = false
+    setRemainingState(next)
+    if (resumesCompletedRun) setResetVersion(version => version + 1)
+  }, [])
 
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current)
-    }
-  }, [state, remaining, onComplete])
-
-  // Progress calculation
-  let progress =
-    duration > 0 ? Math.max(0, Math.min(1, remaining / duration)) : 1
-  if (typeof progressOverride === 'number' && !isNaN(progressOverride)) {
-    progress = Math.max(0, Math.min(1, progressOverride))
-  }
-
-  // Reset timer
   const reset = useCallback(() => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current)
-    }
-    setRemaining(Math.max(0, Math.min(duration, 3599)))
-  }, [duration])
+    clearTick()
+    completedRef.current = false
+    remainingRef.current = effectiveDuration
+    setRemainingState(effectiveDuration)
+    setResetVersion((version) => version + 1)
+  }, [clearTick, effectiveDuration])
 
-  return {
-    remaining,
-    progress,
-    reset,
-    setRemaining,
-  }
+  useEffect(() => {
+    if (previousDurationRef.current !== effectiveDuration) {
+      previousDurationRef.current = effectiveDuration
+      reset()
+    }
+  }, [effectiveDuration, reset])
+
+  const hasTimeRemaining = remaining > 0
+  useEffect(() => {
+    clearTick()
+    if (state !== 'running' || remainingRef.current <= 0) return
+
+    intervalRef.current = setInterval(() => {
+      const next = Math.max(0, remainingRef.current - 1)
+      remainingRef.current = next
+      setRemainingState(next)
+      if (next === 0) {
+        clearTick()
+        if (!completedRef.current) {
+          completedRef.current = true
+          onCompleteRef.current?.()
+        }
+      }
+    }, 1000)
+
+    return clearTick
+  }, [state, effectiveDuration, hasTimeRemaining, resetVersion, clearTick])
+
+  const timedProgress = effectiveDuration > 0 ? remaining / effectiveDuration : 1
+  const progress = typeof progressOverride === 'number' && Number.isFinite(progressOverride)
+    ? Math.max(0, Math.min(1, progressOverride))
+    : Math.max(0, Math.min(1, timedProgress))
+
+  return { remaining, progress, reset, setRemaining }
 }
