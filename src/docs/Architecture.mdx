@@ -1,0 +1,112 @@
+import { Meta, Source } from '@storybook/addon-docs/blocks';
+import { ArchitectureDiagram, MissionConfigExplorer } from './ArchitectureReference';
+import { ExternalControlExample } from './ExternalControlExample';
+import integrationSource from './IntegrationExample.tsx?raw';
+import controlledSource from './ControlledIntegrationExample.tsx?raw';
+import './documentation.css';
+
+<Meta title="Overview/Architecture" parameters={{ docs: { toc: { headingSelector: 'h2' } } }} />
+
+<div className="docs-chapter-label">Architecture &amp; API</div>
+
+# One widget. Two ways to own state.
+
+Configuration decides what a mission looks like. State decides which mission is happening. The widget renders that combination and sends user intent back to its owner.
+
+<ArchitectureDiagram />
+
+## Drive it from the outside
+
+This example is a small host application around the real widget. Change a mission in the host, then pause or expand inside the widget. The state readout and event history make both directions visible.
+
+<ExternalControlExample />
+
+The host controls are local demonstration inputs. A real application can map API responses, a store, or device events into the same React state. The widget does not fetch data or connect to a drone itself.
+
+## Start standalone, keep the same component
+
+For an isolated instance, pass `initialState` to `AutonomyWidgetProvider`. It reads the input once and owns subsequent UI state locally. With no input at all, it starts a 90-second waypoint mission.
+
+<Source dark language="tsx" code={integrationSource} />
+
+Import `src/styles/theme.css` once at the application entry. The widget needs its provider and stylesheet, but it has no dependency on Storybook or a network service to run. This is source in this repository, not an installed public widget package.
+
+Each provider isolates its mission state. Give independent widgets separate providers. Widgets under the same provider share mission inputs; each Timer still owns its own local countdown.
+
+For application-owned state, pass `state` and `onStateChange` instead. The owner decides whether to accept each proposed state and supplies the accepted value on the next render. Do not combine `state` and `initialState`.
+
+<Source dark language="tsx" code={controlledSource} />
+
+This is the compiled adapter used by the live host example above. Its caller supplies `state` and callback implementations. The example keeps state in React; a consuming application can connect its own store or API adapter at that boundary.
+
+`AutonomyWidget` takes no direct mission props. Its nearest provider is the state boundary. `useAutonomyWidget()` gives descendants access to `state`, `setState`, and the configured callbacks; calling it outside a provider throws an error.
+
+## Configuration is the mission vocabulary
+
+`AutonomyWidget.configs.ts` defines `ACTION_CONFIGS`, a typed catalog keyed by `ActionType`. `createAutonomyWidgetState(input)` looks up `action` and derives `actionName`, `timerIcon`, and `buttons` synchronously. The renderer selects paused labels and controls using `isPaused`.
+
+<MissionConfigExplorer />
+
+Changing the selected entry above reads a different object from the real file. It does not create a second catalog or edit configuration at runtime.
+
+<div className="widget-docs-table" role="region" aria-label="Mission configuration fields" tabIndex={0}>
+<table>
+  <thead><tr><th scope="col">Configuration</th><th scope="col">Responsibility</th></tr></thead>
+  <tbody>
+    <tr><td><code>displayName / pausedName</code></td><td>Status copy. If no paused name exists, the widget uses “Mission Paused.”</td></tr>
+    <tr><td><code>timerIcon / actionTooltip</code></td><td>Mission identity and compact-mode timer help.</td></tr>
+    <tr><td><code>buttons / pausedButtons</code></td><td>Active and paused secondary control sets. Empty controls remove the disclosure; paused controls replace the active set.</td></tr>
+    <tr><td><code>id / label / ariaLabel</code></td><td>Stable command identity, visible text, and accessible naming. Icon-only actions require a non-empty accessible name.</td></tr>
+    <tr><td><code>icon / variant / tooltip</code></td><td>The shared icon, supported Button treatment, and optional help for a configured action.</td></tr>
+    <tr><td><code>component: 'orbit-slider'</code></td><td>Selects the button-operated orbit control instead of a regular Button.</td></tr>
+    <tr><td><code>onClick</code></td><td>Optional configured callback, called alongside the provider’s mission-action event.</td></tr>
+  </tbody>
+</table>
+</div>
+
+This catalog is a build-time extension point. Add a new mission to the `ActionType` union and its configuration entry, use an existing icon mapping and Button variant, then cover its active and paused states. A new control kind also requires renderer support. `primaryButton` and `iconRotation` are retained metadata and do not drive the current renderer.
+
+Prefer an active mission plus `isPaused` for a new integration. The three paused catalog keys are retained fixtures, not a requirement to model pause as another mission.
+
+## The complete state and callback contract
+
+<div className="widget-docs-table" role="region" aria-label="Widget state inputs" tabIndex={0}>
+<table>
+  <thead><tr><th scope="col">State input</th><th scope="col">Contract</th></tr></thead>
+  <tbody>
+    <tr><td><code>action</code></td><td>Required mission key. Unknown runtime values normalize to idle.</td></tr>
+    <tr><td><code>time</code></td><td>Required duration in seconds, normalized to a whole number from 0 to 3,599. Non-finite values become 0.</td></tr>
+    <tr><td><code>isPaused</code></td><td>Optional, defaults to false. Preserves remaining countdown time and selects paused presentation.</td></tr>
+    <tr><td><code>expanded</code></td><td>Optional, defaults to false. Reveals available secondary actions at viewports of at least 600px.</td></tr>
+    <tr><td><code>orbitProgress</code></td><td>Optional percentage, normalized to 0–100. Omitted or non-finite input becomes 50.</td></tr>
+  </tbody>
+</table>
+</div>
+
+`actionName`, `timerIcon`, and `buttons` are resolved output. Compatibility input accepts them, but the resolver overwrites them; author the mission input rather than duplicating presentation fields.
+
+<div className="widget-docs-table" role="region" aria-label="Provider callbacks" tabIndex={0}>
+<table>
+  <thead><tr><th scope="col">Callback</th><th scope="col">Emits</th><th scope="col">Use it for</th></tr></thead>
+  <tbody>
+    <tr><td><code>onStateChange(next)</code></td><td>A complete resolved state after a requested change.</td><td>Accept pause, resume, expansion, and orbit changes in a controlled owner, or observe local changes.</td></tr>
+    <tr><td><code>onAction(event)</code></td><td><code>{`{ type: 'mission-action', action, id }`}</code></td><td>Route a secondary mission action to the application’s command handler.</td></tr>
+    <tr><td><code>onOrbitProgressChange(progress)</code></td><td>The requested bounded orbit percentage.</td><td>Observe an adjustment after its shared state update is requested.</td></tr>
+  </tbody>
+</table>
+</div>
+
+The input `action: 'waypoint-mission'` selects a mission. The output `id: 'next'` identifies a button the operator pressed. Those are separate concepts: a Next click emits intent; it does not automatically advance a real mission.
+
+## Connect an application deliberately
+
+An incoming command is handled by the host. The host can map that command or an API response to a new `state.action`, duration, and presentation state. There is no imperative `dispatch(command)` endpoint on the widget; its integration API is React state in and callbacks out.
+
+1. Map application data into `AutonomyWidgetStateInput` and supply it as controlled `state`.
+2. Decide which UI state proposals to accept through `onStateChange`.
+3. Route `onAction` and orbit callbacks into the application’s command layer.
+4. Own pending, acknowledged, rejected, and telemetry-reconciled command states in the application.
+
+`time` is a duration input, not authoritative remaining time. Timer ticks are local; changing only the mission with the same duration preserves its countdown. A new mission that needs a fresh countdown at the same duration requires an explicit reset/remount policy in the host.
+
+For copyable integration examples, continue to <a href="/?path=/docs/engineering-integration--docs" target="_top">Engineering / Integration</a>. For the shared visual rules, open <a href="/?path=/docs/overview-design-system--docs" target="_top">Design system</a>.

@@ -1,0 +1,121 @@
+import { Meta, Source } from '@storybook/addon-docs/blocks';
+import { IntegrationExample } from './IntegrationExample';
+import integrationSource from './IntegrationExample.tsx?raw';
+import './documentation.css';
+
+<Meta title="Engineering/Integration" />
+
+# Integration
+
+The widget turns a small mission-state input into a consistent status and control surface. A local provider is enough for an isolated example; a controlled provider lets an application own state and command handling.
+
+## Start with local state
+
+The example below uses the real public components and is compiled by the project’s TypeScript build. Mission names, timer icons, and control sets are derived from configuration rather than supplied independently.
+
+<div className="widget-docs-example"><IntegrationExample /></div>
+
+<Source dark code={integrationSource} language="tsx" />
+
+The imports are relative to `src/docs/IntegrationExample.tsx`. Import `src/styles/theme.css` once at the application entry point, as `src/main.tsx` does. This repository is a local component project, not a published package.
+
+## Choose the state owner
+
+<div className="widget-docs-table" role="region" aria-label="State ownership modes" tabIndex={0}>
+<table>
+  <thead><tr><th>Mode</th><th>Use when</th><th>Contract</th></tr></thead>
+  <tbody>
+    <tr><td>Local</td><td>An example or a containing component does not need to drive every update.</td><td>Pass <code>initialState</code>. It is read on mount. An optional <code>onStateChange</code> observes updates.</td></tr>
+    <tr><td>Controlled</td><td>The application owns the current mission state.</td><td>Pass <code>state</code> and <code>onStateChange</code>. Store the proposed next state and pass it back.</td></tr>
+  </tbody>
+</table>
+</div>
+
+The TypeScript props require one ownership mode. Do not pass `state` and `initialState` together. In controlled mode, the component does not silently keep a second authoritative copy of application state.
+
+<Source dark language="tsx" code={`import { useState } from 'react';
+import {
+  AutonomyWidget,
+  AutonomyWidgetProvider,
+  type AutonomyWidgetActionEvent,
+  type AutonomyWidgetStateInput,
+} from '../components/AutonomyWidget';
+
+function MissionPanel({ onAction }: {
+  onAction: (event: AutonomyWidgetActionEvent) => void;
+}) {
+  const [state, setState] = useState<AutonomyWidgetStateInput>({
+    action: 'waypoint-mission',
+    time: 90,
+  });
+
+  return (
+    <AutonomyWidgetProvider
+      state={state}
+      onStateChange={setState}
+      onAction={onAction}>
+      <AutonomyWidget />
+    </AutonomyWidgetProvider>
+  );
+}`} />
+
+## Keep inputs separate from presentation
+
+`createAutonomyWidgetState(input)` resolves the mission and derives its display fields synchronously. The same resolver is used by the provider, so consumers do not need to repeat display strings or wait for an effect to populate the first frame.
+
+<div className="widget-docs-table" role="region" aria-label="Widget state contract" tabIndex={0}>
+<table>
+  <thead><tr><th>Input</th><th>Meaning</th><th>Policy</th></tr></thead>
+  <tbody>
+    <tr><td><code>action</code></td><td>Mission configuration key.</td><td>Determines status text, timer icon, and available controls.</td></tr>
+    <tr><td><code>time</code></td><td>Countdown duration in seconds.</td><td>Normalized to a whole number from 0–3,599. It is not the live remaining value.</td></tr>
+    <tr><td><code>isPaused</code></td><td>Local pause state.</td><td>Preserves remaining time and selects paused presentation and controls.</td></tr>
+    <tr><td><code>expanded</code></td><td>Additional-control visibility.</td><td>Offered when the mission has secondary controls. Compact mode removes the secondary row.</td></tr>
+    <tr><td><code>orbitProgress</code></td><td>Orbit percentage.</td><td>Normalized to 0–100; widget caret adjustments update shared state.</td></tr>
+  </tbody>
+</table>
+</div>
+
+`actionName`, `timerIcon`, and `buttons` are resolved output. Storybook hides them from Controls because editing those values independently would create a misleading mission state. Prefer an active action plus `isPaused` for the interactive flow; retained paused-state fixtures remain available for review.
+
+## Connect intent to the application
+
+The provider exposes two callback seams:
+
+- `onAction` receives a mission action event with `type: 'mission-action'`, the current `action`, and the selected control `id`. A configured button callback also runs when present.
+- `onOrbitProgressChange` observes the orbit percentage emitted after the shared state update is requested.
+
+Pause, resume, and expansion produce state updates through `onStateChange`. They do not pretend that an external command has been acknowledged.
+
+An application can route these callbacks to its own transport. It must also own pending, acknowledged, rejected, and telemetry-reconciled states. No network request or drone command is sent by this repository.
+
+## Update a mission deliberately
+
+A child can use `useAutonomyWidget()` to read `{ state, setState }`. The hook throws a descriptive error outside its provider.
+
+<Source dark language="tsx" code={`import { useAutonomyWidget } from '../components/AutonomyWidget';
+
+function ReturnToDockButton() {
+  const { setState } = useAutonomyWidget();
+
+  function handleClick() {
+    setState(previous => ({
+      ...previous,
+      action: 'returning-to-dock',
+      isPaused: false,
+      expanded: false,
+    }));
+  }
+
+  return <button onClick={handleClick}>Return to dock</button>;
+}`} />
+
+Changing the action replaces the derived mission presentation. The countdown restarts when `time` changes. A mission transition with the same duration therefore needs an explicit reset policy in the host application.
+
+## Timer and orbit ownership
+
+The timer owns remaining time locally. A running countdown ticks once per second; pause preserves the value. A normal timer starts with text, then changes to the mission icon after its reading period. `condensed` shows the icon immediately. The standalone Timer’s `progress` override changes the ring independently of countdown text.
+
+The widget owns orbit progress through context. The standalone OrbitSlider also supports local and controlled usage for consumers outside the widget. Its two native buttons adjust bounded values; the track is a reference display, not a draggable range input.
+
+Countdown timing is a local UI mechanism. Authoritative mission time, device synchronization, and command reconciliation remain application responsibilities.
