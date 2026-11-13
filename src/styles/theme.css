@@ -116,6 +116,22 @@
 }
 
 @layer components {
+.widget-tooltip {
+  width: max-content;
+  max-width: min(320px, calc(100vw - 16px));
+  padding: 5px 8px;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-widget);
+  color: var(--color-content-primary);
+  background: var(--color-tooltip-surface);
+  font-family: var(--font-sans);
+  font-size: var(--text-tooltip);
+  line-height: 18px;
+  overflow-wrap: anywhere;
+  pointer-events: auto;
+  z-index: var(--layer-tooltip);
+}
+
 .sb-show-main,
 .docs-story {
   background: var(--color-surface);
@@ -123,6 +139,13 @@
 
 .autonomy-widget-base {
   @apply w-[240px] bg-[#1A1A1A] border border-[#262626] rounded-[4px] flex flex-col transition-all duration-200 overflow-hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .widget-tooltip {
+    animation: none;
+    transition: none;
+  }
 }
 
 }

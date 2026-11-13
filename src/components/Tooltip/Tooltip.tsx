@@ -1,66 +1,95 @@
-import { useEffect, useState } from 'react'
+import { forwardRef, useCallback, useEffect, useLayoutEffect, useRef, useState, type HTMLAttributes, type RefObject, type CSSProperties, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 
-/**
- * Props for the Tooltip component.
- * @property targetRect - The DOMRect of the target element
- * @property children - The tooltip content
- * @property visible - Whether the tooltip is visible
- * @property className - Additional CSS classes for the tooltip container
- */
-interface TooltipProps {
+/** Geometry-driven help, portaled above component clipping boundaries. */
+export interface TooltipProps extends HTMLAttributes<HTMLDivElement> {
+  /** Trigger bounds in viewport coordinates. */
   targetRect: DOMRect | null
-  children: React.ReactNode
+  /** Content may be plain text or short formatted help. */
+  children: ReactNode
+  /** Whether the trigger requests the tooltip. Escape dismisses until the next request. */
   visible: boolean
-  className?: string
+  /** Optional live anchor to refresh positioning during scroll and resize. */
+  anchorRef?: RefObject<HTMLElement | null>
+  /** Notifies a controlled trigger when Escape dismisses the tooltip. */
+  onDismiss?: () => void
 }
 
-/**
- * Tooltip displays contextual information when hovering or focusing on a target element.
- *
- * @param {TooltipProps} props - The properties for configuring the tooltip.
- * @returns {JSX.Element | null} The rendered tooltip or null if not visible.
- *
- * @remarks
- * - Positions itself relative to the targetRect.
- * - Uses a portal for rendering above other content.
- * - Used for accessibility and UX enhancement.
- */
-export const Tooltip: React.FC<TooltipProps> = ({
+/** Non-interactive help. Give its ID to the trigger's `aria-describedby` while visible. */
+export const Tooltip = forwardRef<HTMLDivElement, TooltipProps>(function Tooltip({
   targetRect,
   children,
   visible,
   className = '',
-}) => {
-  const [style, setStyle] = useState<React.CSSProperties | null>(null)
+  anchorRef,
+  onDismiss,
+  style: customStyle,
+  ...nativeProps
+}, forwardedRef) {
+  const tooltipRef = useRef<HTMLDivElement>(null)
+  const [dismissed, setDismissed] = useState(false)
+  const [position, setPosition] = useState<CSSProperties | null>(null)
+  const setRef = useCallback((node: HTMLDivElement | null) => {
+    tooltipRef.current = node
+    if (typeof forwardedRef === 'function') forwardedRef(node)
+    else if (forwardedRef) forwardedRef.current = node
+  }, [forwardedRef])
 
   useEffect(() => {
-    if (targetRect && visible) {
-      setStyle({
-        position: 'fixed',
-        top: targetRect.bottom + 14,
-        left: targetRect.left + targetRect.width / 2,
-        transform: 'translate(-50%, 0)',
-        zIndex: 9999,
-        pointerEvents: 'none',
-        opacity: 1,
-        transition: 'opacity 0.15s ease-in-out',
-      })
-    } else {
-      setStyle(null)
-    }
-  }, [targetRect, visible]) // Added targetRect to dependencies
+    if (!visible) setDismissed(false)
+  }, [visible])
 
-  if (!visible || !style || typeof document === 'undefined') return null
+  useLayoutEffect(() => {
+    if (!visible || dismissed || !targetRect) {
+      setPosition(null)
+      return
+    }
+    const place = () => {
+      const rect = anchorRef?.current?.getBoundingClientRect() || targetRect
+      const tip = tooltipRef.current
+      const gap = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--tooltip-gap')) || 14
+      const height = tip?.offsetHeight || 0
+      const width = tip?.offsetWidth || 0
+      const center = rect.left + rect.width / 2
+      const padding = 8
+      const left = width ? Math.max(width / 2 + padding, Math.min(center, window.innerWidth - width / 2 - padding)) : center
+      const below = rect.bottom + gap
+      const top = height && below + height > window.innerHeight - padding
+        ? Math.max(padding, rect.top - height - gap)
+        : below
+      setPosition({ position: 'fixed', top, left, transform: 'translateX(-50%)' })
+    }
+    place()
+    window.addEventListener('resize', place)
+    window.addEventListener('scroll', place, true)
+    return () => {
+      window.removeEventListener('resize', place)
+      window.removeEventListener('scroll', place, true)
+    }
+  }, [targetRect, visible, dismissed, anchorRef, children])
+
+  useEffect(() => {
+    if (!visible || dismissed) return
+    const dismiss = (event: KeyboardEvent) => {
+      if (event.defaultPrevented || event.key !== 'Escape') return
+      setDismissed(true)
+      onDismiss?.()
+    }
+    document.addEventListener('keydown', dismiss)
+    return () => document.removeEventListener('keydown', dismiss)
+  }, [visible, dismissed, onDismiss])
+
+  if (!visible || dismissed || !targetRect || typeof document === 'undefined') return null
 
   return createPortal(
     <div
-      className={`bg-black text-white text-xs rounded py-1 px-2 whitespace-nowrap ${className}`}
-      style={style}
+      {...nativeProps}
+      ref={setRef}
       role="tooltip"
-      aria-hidden={!visible}>
+      className={`widget-tooltip ${className}`.trim()}
+      style={{ ...position, ...customStyle }}>
       {children}
     </div>,
     document.body
   )
-}
+})
