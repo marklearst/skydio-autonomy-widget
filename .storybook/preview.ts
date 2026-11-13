@@ -1,41 +1,46 @@
-import '../src/styles/theme.css'
+import "../src/styles/theme.css";
 
-import type { Preview } from '@storybook/react-vite'
+import type { Preview } from "@storybook/react-vite";
+import { themes } from "storybook/theming";
 
 const preview: Preview = {
   parameters: {
+    layout: "centered",
     options: {
       storySort: {
-        order: [
-          'AutonomyWidget',
-          'Controls',
-          'Button',
-          'Timer',
-          'StatusMessage',
-        ],
+        order: ["Overview", ["Introduction", "Architecture", "Design system"], "Components", ["AutonomyWidget", "Buttons", "Controls", "Timer", "StatusMessage", "Tooltip"], "Foundation", ["Tokens"], "Engineering", ["Integration", "Component API", "Verification"]],
       },
     },
     controls: {
+      expanded: true,
+      sort: "requiredFirst",
       matchers: {
         color: /(background|color)$/i,
         date: /Date$/i,
       },
     },
+    docs: {
+      theme: themes.dark,
+      toc: { headingSelector: 'h2' },
+      story: { autoplay: false },
+      source: { dark: true },
+    },
 
     a11y: {
-      // 'todo' - show a11y violations in the test UI only
-      // 'error' - fail CI on a11y violations
-      // 'off' - skip a11y checks entirely
-      test: 'todo',
+      test: "todo",
     },
     backgrounds: {
-      default: 'dark',
-      values: [
-        { name: 'dark', value: '#222831' },
-        { name: 'light', value: '#ffffff' },
-      ],
+      options: {
+        dark: { name: "dark", value: "var(--color-surface)" },
+      },
     },
   },
-}
 
-export default preview
+  initialGlobals: {
+    backgrounds: {
+      value: "dark",
+    },
+  },
+};
+
+export default preview;

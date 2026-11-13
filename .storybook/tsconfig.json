@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.app.json",
+  "compilerOptions": {
+    "rootDir": "..",
+    "composite": false,
+    "noEmit": true,
+    "types": ["vite/client"]
+  },
+  "include": ["*.ts", "*.tsx"]
+}

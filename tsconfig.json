@@ -1,11 +1,10 @@
 {
   "compilerOptions": {
-    "baseUrl": "src",
     "paths": {
-      "hooks": ["hooks"],
-      "components": ["components"],
-      "utils": ["utils"],
-      "icons": ["assets/icons"],
+      "hooks": ["./src/hooks"],
+      "components": ["./src/components"],
+      "utils": ["./src/utils"],
+      "icons": ["./src/assets/icons"],
     },
     "types": ["node"],
     "rootDir": "src",

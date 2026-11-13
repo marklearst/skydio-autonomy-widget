@@ -1,15 +1,11 @@
-import { addons } from '@storybook/manager-api'
-import { themes } from '@storybook/theming'
-
-addons.register('force-default-story', () => {
-  addons.getChannel().on('storyRendered', () => {
-    const hash = window.location.hash
-    if (!hash || hash === '#/') {
-      window.location.hash = '#/components-autonomywidget--running' // adjust to your story id
-    }
-  })
-})
+import { addons } from 'storybook/manager-api'
+import { themes } from 'storybook/theming'
 
 addons.setConfig({
-  theme: themes.dark,
+  theme: {
+    ...themes.dark,
+    brandTitle: 'Autonomy Widget',
+    brandUrl: '/?path=/docs/overview--docs',
+    brandTarget: '_self',
+  },
 })
