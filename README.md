@@ -1,383 +1,128 @@
-# Rivit Design System – Autonomy Widget
+# Skydio Autonomy Widget
 
-A React-based, highly composable widget system for Skydio’s “Rivit” design language, focused on real-time control, timer, and autonomy workflows.
+A React implementation of a mission-status and control widget using Skydio’s Rivit design language. Storybook contains the live examples, behavior documentation, and interaction tests.
 
+The widget demonstrates UI behavior and an application integration seam. The host example changes mission state and receives intent events; transport, acknowledgment, and telemetry synchronization remain application responsibilities.
 
-## 🚀 Full Feature List
+## Start locally
 
-- **Action-Driven Architecture**: Central, declarative config (`ACTION_CONFIGS`) powers all UI, ensuring rapid extensibility.
-- **Config-Driven Everything**: All actions, icons, and controls are mapped in `AutonomyWidget.configs.ts`, making UI parity with Figma effortless.
-- **Configurable Button Sets**: Each action defines its own button set, icon, tooltip, and label—fully customizable.
-- **Dynamic Timer with Icon Swap**: Circular countdown ring with animated icon transitions, responsive to state and action.
-- **OrbitSlider**: Custom slider with dual progress indicators, chevron controls, and locked distance display for orbit mode.
-- **Responsive Layout**: Compact mode (mobile) and expanded mode (desktop) with automatic adaptation.
-- **Status Message**: Dynamic, expandable message area for mission status.
-- **Figma-Exported SVG Icon Library**: All icons are Figma-exported SVGs, imported as React components with full theming and accessibility support.
-- **API-Like Integration**: Emulates a UI API for remote control, state sync, event hooks, and analytics.
-- **Composable Barrel Architecture**: All modules, icons, and components are re-exported via directory `index.ts` for clean, scalable imports.
-- **Mission Grouping Logic**: Supports Waypoint, RTD, Orbit, Paused, Tracking, and more, each with unique UI behaviors.
-- **Extensible for Future Missions**: Add new actions, icons, or control sets in minutes.
+Use pnpm with a Node.js version supported by [package.json](package.json).
 
----
-
-### Component UI Map
-
-- **AutonomyWidget**: The root layout, orchestrates context and renders all subcomponents.
-- **Button**: Universal autonomy action button, supports icon, label, variant, tooltip, and accessibility.
-- **Controls**: Row of autonomy buttons for mission control (desktop only).
-- **Timer**: Circular countdown with icon swap and tooltip, responsive to mission state.
-- **OrbitSlider**: Specialized slider for orbit actions, with dual indicators and chevron controls.
-- **StatusMessage**: Expandable, styled area for mission status, errors, and info.
-- **Tooltip**: Custom, accessible tooltip for all interactive elements.
-- **Icon Library**: Figma-exported SVGs, imported as React components for full theme and a11y support.
-
----
-
-## 🧭 Storybook Navigation & Usage Tips
-
-**Component Discovery:**
-Use the Storybook sidebar to browse by component, state, or design token. Components are grouped by function and mission type for intuitive navigation.
-
-**Docs Tab:**
-Every component includes a “Docs” tab featuring usage guidelines, prop tables, and live code examples.
-
-**Controls & Knobs:**
-Use Storybook Controls to interactively adjust props (actions, icons, states) and instantly preview UI updates.
-
----
-
-## Code Structure
-
-```plaintext
-src/
-  components/
-    AutonomyWidget/
-      AutonomyWidget.tsx            # Main widget, pure renderer
-      AutonomyWidget.configs.ts     # Central action/button/icon config mapping
-      AutonomyWidget.types.ts       # All widget types/interfaces
-      AutonomyWidget.context.tsx    # React Context for state sharing
-      AutonomyWidget.provider.tsx   # Provider for unified state/logic
-      hooks/
-        useAutonomyWidget.ts        # Unified state hook
-    Timer/                          # Countdown ring, supports label/icon swap, tooltip
-    Button/                         # All-purpose autonomy button, variants, icons, tooltips
-    Controls/                       # Row of autonomy control buttons (desktop only)
-    OrbitSlider/                    # Orbit mode slider with chevrons, dual indicators
-    StatusMessage/                  # Status text/message component
-    Tooltip/                        # Custom, accessible tooltip
-    # index.ts in each folder for barrel exports
-  hooks/                            # Custom hooks (breakpoint, timer logic, etc)
-  utils/                            # Shared utilities (e.g. time formatting)
-  assets/
-    icons/                          # Figma-exported SVG icons, imported as React components via SVGR
-    # other assets (images, fonts)
-  styles/                           # Tailwind and global styles
-  types/                            # Shared TypeScript types/interfaces
+```sh
+pnpm install
+pnpm storybook
 ```
 
-## Barrel Architecture
+Open [Storybook](http://localhost:6006/?path=/docs/overview--docs). To run the standalone widget instead, use `pnpm dev`.
 
-This project uses a barrel architecture pattern for module organization. Each major directory (e.g., `components/`, `hooks/`, `utils/`, `assets/icons/`) contains an `index.ts` file that re-exports all public modules, components, or assets in that directory. This approach:
+## Documentation
 
-- Simplifies imports throughout the codebase
-- Promotes encapsulation and modularity
-- Makes it easy to update, refactor, or swap implementations
+- [Overview](src/docs/Overview.mdx): a guided walkthrough with live mission examples and the design decisions behind the layout.
+- [Architecture & API](src/docs/Architecture.mdx): the state flow, typed API, and live host example.
+- [Design system](src/docs/DesignSystem.mdx): semantic-token relationships and working component specimens.
+- [Contribution rules](DESIGN.md): allowed token layers, component choices, and closed variants.
+- [Integration](src/docs/Integration.mdx): a compiled provider example, state ownership, timer semantics, and current integration boundaries.
+- [Component API](src/docs/ComponentAPI.mdx): complete props, defaults, closed variants, normalization, refs, and callback contracts.
+- [Verification](src/docs/Verification.mdx): test layers, accessibility review, coverage interpretation, and publishing.
+- [Modernization notes](docs/modernization.md): dependency versions and compatibility decisions.
 
+In Storybook, start with **Overview**, then open **Architecture & API** or **Design system** beneath it for the relevant audience. **Components / AutonomyWidget / Default**, **Expanded**, and **Orbit Mode** are manual examples. Their named **Interaction** stories run automated sequences; expand the Interactions panel to follow each assertion.
 
-**Example:**
-```ts
-// Importing a component from the barrel
-import { IconButton } from './components/IconButton'
+## How it fits together
 
-// Importing an icon from the icons barrel
-import { PlayIcon } from './assets/icons'
+The typed mission catalog in `AutonomyWidget.configs.ts` selects status text, timer icons, and available actions. `createAutonomyWidgetState` normalizes caller input and derives that presentation before the widget renders. The provider stores the result locally or accepts application-controlled state.
+
+An external-system adapter maps its data into the widget’s input shape. In controlled mode, widget interaction proposes a next state through `onStateChange`; the host decides what to retain and passes the authoritative value back. Mission actions return through `onAction`, and orbit adjustments through `onOrbitProgressChange`.
+
+The configuration is TypeScript code compiled with the application. It is not an arbitrary runtime JSON layout engine. The host example demonstrates the adapter boundary without opening a drone connection or implementing a command queue.
+
+## Use the widget
+
+Import the theme once at the application entry point:
+
+```tsx
+import './styles/theme.css'
 ```
 
-## 🚀 Getting Started
-
-1. **Install dependencies:**
-   `pnpm install`
-2. **Run Storybook:**
-   `pnpm storybook`
-3. **Run the Dev Server:**
-   `pnpm dev`
-
----
-
-## 🧑‍💻 Development Guidelines
-
-- Use the shared `IconButton` for all interactive autonomy icons (including expand/collapse).
-- Responsive by default: minimal UI on mobile, full controls on desktop.
-- Exports via `index.ts` for each component folder.
-- Prefer composable patterns (children, flexible props).
-
----
-
-## 🧩 Context API & Config-Driven State Management
-
-The AutonomyWidget now uses a modern, context-driven architecture for unified state and configuration. All widget state, actions, and UI are managed via a React Context Provider and a central config mapping, making the widget highly reusable and easy to extend.
-
-### How It Works
-
-- **Provider:**
-  Wrap your widget (or app section) with `<AutonomyWidgetProvider initialState={...}>`. The provider manages all widget state and exposes it via context to all children.
-
-- **Context:**
-  Use the `AutonomyWidgetContext` to access state, dispatch actions, or read derived UI properties anywhere in the widget tree.
-
-- **Config Mapping:**
-  All action-driven UI (buttons, icons, labels, tooltips) is defined in a central config (`AutonomyWidget.configs.ts`). This ensures Figma parity and makes it easy to update or extend supported actions.
-
-### Example Usage
+Wrap the widget with its provider:
 
 ```tsx
 import {
+  AutonomyWidget,
   AutonomyWidgetProvider,
-  useAutonomyWidget,
-} from './components/AutonomyWidget';
+  type AutonomyWidgetStateInput,
+} from './components/AutonomyWidget'
 
-const initialState = {
-  action: 'flying-to-point',
-  // ...other state fields
-};
+const initialState: AutonomyWidgetStateInput = {
+  action: 'waypoint-mission',
+  time: 90,
+  expanded: false,
+  isPaused: false,
+}
 
-export default function App() {
+export function App() {
   return (
     <AutonomyWidgetProvider initialState={initialState}>
       <AutonomyWidget />
     </AutonomyWidgetProvider>
-  );
+  )
 }
-
-// Access context anywhere in the widget tree:
-const { state, setState, config } = useAutonomyWidget();
 ```
 
-### Extending or Customizing
+These imports are relative to `src/`. A compiled example lives in [IntegrationExample.tsx](src/docs/IntegrationExample.tsx).
 
-- **Add new actions or buttons:**
-  Update `AutonomyWidget.configs.ts` with new action configs.
-- **Custom state or logic:**
-  Extend the context/provider or use the provided hooks for advanced integrations.
-- **Theme and tokens:**
-  The widget uses design tokens and Tailwind v4 for consistent styling; update `theme.css` for custom themes.
+Inside the provider, `useAutonomyWidget()` returns `{ state, setState }`. Use `initialState` for local ownership or `state` with required `onStateChange` for application ownership. The provider derives mission names, icons, and controls synchronously; callers own the mission input rather than repeating its display fields.
 
-### Advanced Usage
+`time` is a duration, not a telemetry timestamp or live remaining value. Changing its effective normalized value restarts the local countdown. Changing only the mission with the same duration preserves that countdown; a host that requires a new run must define an explicit reset or remount policy.
 
-#### 1. Programmatically Updating State
+`onAction` emits `{ type: 'mission-action', action, id }`; `onOrbitProgressChange` observes orbit changes. The host application owns transport and acknowledgment. See the integration guide for a controlled example.
 
-You can update the widget state from anywhere in the tree using the context hook:
+## Commands
 
-```tsx
-const { state, setState } = useAutonomyWidget();
+| Command | Purpose |
+| --- | --- |
+| `pnpm storybook` | Start the component explorer on port 6006. |
+| `pnpm dev` | Start the standalone Vite app. |
+| `pnpm test` | Run Storybook and behavior tests in Chromium. |
+| `pnpm test:coverage` | Write combined coverage to `coverage-all-tests/index.html`. |
+| `pnpm build` | Type-check the project and build the standalone app. |
+| `pnpm build-storybook` | Build the Storybook site. |
+| `pnpm chromatic` | Publish Storybook for visual review. |
 
-// Example: Pause the mission
-setState(prev => ({ ...prev, action: 'mission-paused' }));
+Install the test browser on a new machine:
+
+```sh
+pnpm exec playwright install chromium --only-shell
 ```
 
-#### 2. Listening to State Changes
+The Storybook panel runs story tests only. Its `coverage/` report does not include the behavior or application-startup tests. The combined report uses a separate directory so the panel cannot overwrite it.
 
-React to widget state changes in your own components:
+## Publish Storybook
 
-```tsx
-const { state } = useAutonomyWidget();
+Set `CHROMATIC_PROJECT_TOKEN` in the gitignored `.env.local`, then run `pnpm chromatic`. The file must remain untracked. In CI, provide the token as an environment secret.
 
-useEffect(() => {
-  if (state.action === 'return-to-home') {
-    // Trigger analytics, notifications, etc.
-  }
-}, [state.action]);
-```
+Publishing a build and accepting its visual baselines are separate steps. Review the rendered comparisons before accepting changes. The repository’s Vercel configuration also builds and serves Storybook.
 
-#### 3. Extending the Action Config
+## Code map
 
-Add a new action with custom buttons and icons:
+| Location | Responsibility |
+| --- | --- |
+| `src/components/AutonomyWidget/` | Typed mission catalog, state normalization, context, provider, and widget composition. |
+| `src/components/Timer/` | Countdown ring, text/icon transition, and completion behavior. |
+| `src/components/OrbitSlider/` | Controlled or local orbit progress and limit controls. |
+| `src/components/Button/` | Native buttons, icon variants, and hover/focus help. |
+| `src/hooks/` | Countdown and viewport-breakpoint behavior. |
+| `src/styles/theme.css` | Shared colors, typography, and component utilities. |
+| `src/docs/` | Storybook architecture and design-system guides, live specimens, and integration examples. |
 
-```ts
-// In AutonomyWidget.configs.ts
-ACTION_CONFIGS['my-custom-action'] = {
-  name: 'Custom Action',
-  timerIcon: 'c_route', // Use any available icon name
-  buttons: [
-    { icon: 'c_play', label: 'Start', onClick: () => {/* ... */} },
-    // ...more buttons
-  ],
-  primaryButton: { icon: 'm_stop_sign', label: 'Stop', onClick: () => {/* ... */} },
-};
-```
+## Current boundaries
 
-#### 4. Integrating with External Systems
+- Pause/resume and expansion update the provider’s local or application-controlled state.
+- Mission action clicks invoke configured callbacks and emit typed UI-intent events. Transport and acknowledgment are application work.
+- Widget orbit adjustments update shared state and expose a callback. External persistence remains application work.
+- Countdown timing uses a local interval and is not synchronized to telemetry.
+- Automated accessibility violations fail story tests and are visible in Storybook; they are not a conformance certification.
 
-You can synchronize widget state with external APIs, Redux, or parent app state:
+## Ownership
 
-```tsx
-const { state, setState } = useAutonomyWidget();
-
-// Example: Update widget when drone status changes
-useEffect(() => {
-  if (drone.status === 'paused') {
-    setState(prev => ({ ...prev, action: 'mission-paused' }));
-  }
-}, [drone.status]);
-```
-
-#### 5. Consuming Derived UI State
-
-The context exposes derived fields (e.g., current config, button set, timer icon) for advanced UI composition:
-
-```tsx
-const { config } = useAutonomyWidget();
-return <span>Current action: {config.name}</span>;
-```
-
-### Legacy State/Config
-
-> **Note:**
-> Previous state/config APIs are deprecated. All new integrations should use the context/provider and config-driven approach described above.
-
----
-
-## 🛡️ API Emulation & Integration Patterns
-
-The config-driven architecture of the AutonomyWidget is designed to emulate a robust UI API, enabling seamless integration with external systems, SDKs, or cloud services. This pattern allows the widget to behave like a "UI microservice" that can be controlled, extended, or observed programmatically—just like a traditional API.
-
-### How the Widget Emulates an API
-
-- **Declarative Config as API Schema:**
-  - The `ACTION_CONFIGS` object acts as an API schema for all supported actions, buttons, icons, and UI states.
-  - Adding or modifying actions is as simple as updating the config, similar to updating an API endpoint or contract.
-
-- **Context as API Surface:**
-  - The React context (`useAutonomyWidget`) exposes state, config, and update methods, emulating API calls for getting/setting widget state.
-  - Consumers can subscribe to state changes, trigger actions, or inject new configs at runtime.
-
-- **Event Hooks:**
-  - Consumers can listen for state transitions (e.g., mission started, paused, completed) and trigger side effects, analytics, or remote calls.
-
-### Suggested API Integration Patterns
-
-- **Remote State Sync:**
-  - Sync widget state with a backend or device API (e.g., drone telemetry) by calling `setState` in response to remote events.
-  - Example: When a REST/WebSocket API signals "mission-paused", update the widget state accordingly.
-
-- **Config Injection:**
-  - Dynamically inject or override action configs at runtime, allowing the API to define available actions, button sets, or labels.
-  - Example: Fetch a config JSON from an API and merge it into `ACTION_CONFIGS` before rendering.
-
-- **Command/Control Interface:**
-  - Expose imperative methods (e.g., `startMission()`, `pauseMission()`, `setAction('orbit')`) that update widget state and UI, mirroring traditional API endpoints.
-  - Example: Parent app provides an interface for external scripts or SDKs to control the widget.
-
-- **Event Subscription:**
-  - Provide hooks or callbacks for external consumers to listen for action changes, button presses, or timer events.
-  - Example: Pass an `onActionChange` prop to the provider, or use a custom event emitter inside the context.
-
-- **Analytics & Telemetry:**
-  - Automatically emit events on state transitions, button clicks, or timer completions to external analytics or telemetry APIs.
-
-### Example: Integrating with an External API
-
-```tsx
-// Sync widget state with an external drone API
-useEffect(() => {
-  api.on('missionUpdate', (status) => {
-    setState(prev => ({ ...prev, action: status.action }));
-  });
-}, []);
-
-// Emit widget events to analytics
-useEffect(() => {
-  if (state.action === 'landing') {
-    analytics.track('Widget:LandingStarted');
-  }
-}, [state.action]);
-```
-
-> **Tip:**
-> For large-scale apps, consider wrapping the widget in a higher-order provider that bridges between your API and the widget context, handling all sync, events, and config injection in one place.
-
----
-
-## 🎨 Tailwind CSS
-
-This project uses [`@tailwindcss/vite`](https://tailwindcss.com/docs/guides/vite) plugin for fast builds and seamless Storybook integration.
-
-> **Why Tailwind?**
->
-> Tailwind CSS enables rapid prototyping, strict design system adherence, and effortless scaling from MVP to enterprise.
-
----
-
-## 📚 Storybook v9
-
-This project uses [Storybook v9](https://storybook.js.org/) as the single source of truth for component documentation, design review, and UI state validation.
-
-- **Vite Integration:**
-  - Storybook is configured to run with Vite for fast builds and instant feedback.
-- **Component-Driven:**
-  - Every UI component and key state is documented as a Storybook story, supporting rapid prototyping and stakeholder review.
-
-> **Why Storybook?**
->
-> Storybook enables scalable, collaborative UI development. Designers, engineers, and PMs can all review and validate components in isolation, ensuring quality and consistency before integration.
-
----
-
-## 📄 License
-
-All code and deliverables are the property of Skydio, Inc.
-© 2025 Skydio, Inc. — All rights reserved.
-
----
-
-## 📝 Changelog
-
-### v1.1.0 (2025-07-28)
-- Full config-driven, context/provider architecture
-- Unified `AutonomyWidgetProvider` and state hook
-- Central `ACTION_CONFIGS` for all UI logic
-- Figma-exported SVG icon system
-- OrbitSlider with dual indicators and chevron controls
-- Pure renderer component structure, barrel exports
-- Complete Storybook coverage for all states and tokens
-- API-like integration patterns and advanced usage
-
-### v1.0.0 (2025-06-01)
-- Initial release: Timer, Button, Controls, StatusMessage, basic Storybook
-
----
-
-## 🤝 Guidelines
-
-**Component Naming:**
-Use PascalCase for components, camelCase for props, and kebab-case for file names.
-
-**Commit Messages:**
-Follow [Conventional Commits](https://www.conventionalcommits.org/) for all commits/PRs.
-
----
-
-## 🛠️ Storybook Addons Used
-
-- **@storybook/addon-essentials:** Controls, Docs, Actions, Viewport, Backgrounds, etc.
-- **@storybook/addon-a11y:** Accessibility checks and recommendations
-- **@storybook/addon-themes:** Light/dark mode switching
-- **@storybook/addon-interactions:** For interactive stories
-- **@storybook/addon-docs:** For Markdown/MDX documentation
-
----
-
-## ❓ FAQ
-
-**How do I add a new mission or action?**
-- Edit `AutonomyWidget.configs.ts` and add a new entry to `ACTION_CONFIGS`.
-- Add any new icons to `assets/icons/` and export them in the icons index.
-- Document the new action in Storybook.
-
-**Can I control the widget from an external API?**
-- Yes! Use the context hook (`useAutonomyWidget`) to update state in response to API events.
-- See the API Emulation & Integration Patterns section for full examples.
-
-**How do I add a new icon?**
-- Export the SVG from Figma, add to `assets/icons/`, and import with `?react`.
-- Re-export from the icons index file for easy use.
+Copyright © 2025 Skydio, Inc. All rights reserved. Code and deliverables are the property of Skydio, Inc. See [LICENSE](LICENSE).
