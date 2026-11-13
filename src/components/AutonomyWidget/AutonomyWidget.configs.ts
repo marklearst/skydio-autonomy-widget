@@ -9,30 +9,30 @@ const WAYPOINT_BUTTONS = [
   {
     id: 'refresh',
     label: '',
-    variant: 'secondary' as const,
+    ariaLabel: 'Refresh waypoint',
+    variant: 'action' as const,
     icon: 'ArrowTurnDownLeftIcon',
-    onClick: () => console.log('Refresh waypoint'),
   },
   {
     id: 'prev',
     label: '',
-    variant: 'secondary' as const,
+    ariaLabel: 'Previous waypoint',
+    variant: 'action' as const,
     icon: 'ChevronLeftIcon',
-    onClick: () => console.log('Previous waypoint'),
   },
   {
     id: 'next',
     label: '',
-    variant: 'secondary' as const,
+    ariaLabel: 'Next waypoint',
+    variant: 'action' as const,
     icon: 'ChevronRightIcon',
-    onClick: () => console.log('Next waypoint'),
   },
   {
     id: 'settings',
     label: '',
-    variant: 'secondary' as const,
+    ariaLabel: 'Waypoint settings',
+    variant: 'action' as const,
     icon: 'CameraViewfinderIcon',
-    onClick: () => console.log('Waypoint settings'),
   },
 ]
 
@@ -40,19 +40,17 @@ const WAYPOINT_BUTTONS = [
 const EXIT_MISSION_BUTTON: ActionButton = {
   id: 'exit-mission',
   label: 'Exit Mission',
-  variant: 'secondary' as const,
+  variant: 'action' as const,
   icon: 'ArrowLeftIcon',
-  onClick: () => console.log('Exit mission'),
 }
 
-// Orbit distance slider
+// Orbit progress control
 const ORBIT_SLIDER_BUTTON: ActionButton = {
   id: 'orbit-slider',
-  label: 'Distance Control',
-  variant: 'secondary' as const,
+  label: 'Orbit progress',
+  variant: 'action' as const,
   icon: '', // No icon needed for slider
   component: 'orbit-slider',
-  onClick: () => console.log('Orbit distance changed'),
 }
 
 // Simple component library configs based on Figma screenshots
@@ -82,8 +80,6 @@ export const ACTION_CONFIGS: Record<ActionType, ActionConfig> = {
     actionTooltip: 'ETA to Dock',
     timerIcon: 'ArrowTurnDownLeftIcon',
     buttons: [],
-    // Example: Custom button instead of stop/play
-    // primaryButton: { type: 'custom', label: 'Mission', icon: 'NavigationIcon', variant: 'default' }
   },
 
   'returning-to-safe-point': {
@@ -94,9 +90,9 @@ export const ACTION_CONFIGS: Record<ActionType, ActionConfig> = {
       {
         id: 'stop',
         label: '',
-        variant: 'danger',
+        ariaLabel: 'Stop returning to safe point',
+        variant: 'stop',
         icon: 'StopSignIcon',
-        onClick: () => console.log('Stop returning to safe point'),
       },
     ],
   },
@@ -112,16 +108,12 @@ export const ACTION_CONFIGS: Record<ActionType, ActionConfig> = {
     displayName: 'Mission Paused',
     actionTooltip: 'Mission Paused',
     timerIcon: 'NavigationIcon',
-    primaryButton: {
-      type: 'play', // Will show play button to resume
-    },
     buttons: [
       {
         id: 'exit',
         label: 'Exit Mission',
-        variant: 'secondary',
+        variant: 'action',
         icon: 'XSquareIcon',
-        onClick: () => console.log('Exit mission'),
       },
     ],
   },
@@ -130,9 +122,6 @@ export const ACTION_CONFIGS: Record<ActionType, ActionConfig> = {
     pausedName: 'Fly to Point Paused',
     actionTooltip: 'Fly to Point Paused',
     timerIcon: 'RouteIcon',
-    primaryButton: {
-      type: 'play', // Will show play button to resume
-    },
     buttons: [], // No additional buttons
   },
   // Future Actions (from Figma Image 2)
@@ -158,9 +147,8 @@ export const ACTION_CONFIGS: Record<ActionType, ActionConfig> = {
       {
         id: 'stop',
         label: 'Stop',
-        variant: 'destructive',
+        variant: 'stop',
         icon: 'StopSignIcon',
-        onClick: () => console.log('Stop tracking'),
       },
     ],
   },
@@ -172,9 +160,8 @@ export const ACTION_CONFIGS: Record<ActionType, ActionConfig> = {
       {
         id: 'stop',
         label: 'Stop',
-        variant: 'destructive',
+        variant: 'stop',
         icon: 'StopSignIcon',
-        onClick: () => console.log('Stop searching'),
       },
     ],
   },
@@ -187,16 +174,16 @@ export const ACTION_CONFIGS: Record<ActionType, ActionConfig> = {
       {
         id: 'prev',
         label: '',
-        variant: 'secondary',
+        ariaLabel: 'Previous waypoint',
+        variant: 'action',
         icon: 'ChevronLeftIcon', // Figma left chevron
-        onClick: () => console.log('Previous waypoint'),
       },
       {
         id: 'next',
         label: '',
-        variant: 'secondary',
+        ariaLabel: 'Next waypoint',
+        variant: 'action',
         icon: 'ChevronRightIcon', // Figma right chevron
-        onClick: () => console.log('Next waypoint'),
       },
     ],
   },
@@ -208,9 +195,8 @@ export const ACTION_CONFIGS: Record<ActionType, ActionConfig> = {
       {
         id: 'completed',
         label: 'Mission Idling',
-        variant: 'secondary',
+        variant: 'action',
         icon: 'BinocularsIcon', // Figma right chevron
-        onClick: () => console.log('Mission Idling'),
       },
     ],
   },
