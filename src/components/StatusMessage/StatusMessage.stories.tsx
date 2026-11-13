@@ -5,10 +5,12 @@ const meta: Meta<typeof StatusMessage> = {
   title: 'Components/StatusMessage',
   component: StatusMessage,
   tags: ['autodocs'],
+  args: { message: 'Flying to Point 1', className: '' },
   parameters: {
+    controls: { include: ['message'] },
     docs: {
       description: {
-        component: 'Displays a truncated status message for UI feedback.',
+        component: 'A single-line mission status announced politely by screen readers. Text is clipped when the available width is exceeded.',
       },
     },
     a11y: {
@@ -16,8 +18,11 @@ const meta: Meta<typeof StatusMessage> = {
     },
   },
   argTypes: {
-    message: { control: 'text', description: 'The status message to display.' },
-    className: { control: 'text', description: 'Additional Tailwind classes.' },
+    message: {
+      control: 'text', description: 'Mission status text. An empty value produces an empty status region.',
+      table: { category: 'Content', type: { summary: 'string' }, defaultValue: { summary: 'Required' } },
+    },
+    className: { table: { disable: true } },
   },
 }
 
