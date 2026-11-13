@@ -239,13 +239,50 @@
 }
 
 .autonomy-widget-base {
-  @apply w-[240px] bg-[#1A1A1A] border border-[#262626] rounded-[4px] flex flex-col transition-all duration-200 overflow-hidden;
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  width: var(--widget-width);
+  height: var(--widget-height);
+  color: var(--color-content-primary);
+  background: transparent;
+  border: var(--widget-border-width) solid transparent;
+  border-radius: var(--radius-widget);
+  overflow: visible;
+}
+
+.autonomy-widget-surface {
+  position: absolute;
+  inset: calc(-1 * var(--widget-border-width));
+  z-index: -1;
+  border: var(--widget-border-width) solid var(--color-border-subtle);
+  border-radius: var(--radius-widget);
+  background: var(--color-surface);
+  pointer-events: none;
+}
+
+.autonomy-widget-header {
+  padding: calc(var(--widget-padding) - var(--widget-border-width)) var(--widget-padding);
+}
+
+.autonomy-widget-base[data-compact="true"] .autonomy-widget-header {
+  padding-inline: calc(var(--widget-padding) - var(--widget-border-width));
+}
+
+.autonomy-widget-base[data-expanded="true"] {
+  height: var(--widget-expanded-height);
+}
+
+.autonomy-widget-base[data-compact="true"] {
+  width: var(--widget-compact-width);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .widget-button,
   .widget-tooltip,
-  .orbit-control {
+  .orbit-control,
+  .autonomy-widget-base {
     animation: none;
     transition: none;
   }

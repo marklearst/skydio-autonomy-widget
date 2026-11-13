@@ -22,9 +22,5 @@ export default tseslint.config([
       ecmaVersion: 2020,
       globals: globals.browser,
     },
-    rules: {
-      // Warn until the remaining components move their effect-driven state to events.
-      'react-hooks/set-state-in-effect': 'warn',
-    },
   },
 ], storybook.configs["flat/recommended"]);
