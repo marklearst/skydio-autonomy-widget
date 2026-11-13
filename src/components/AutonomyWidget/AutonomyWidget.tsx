@@ -1,187 +1,242 @@
+import { useCallback, useId, useLayoutEffect, useRef, type ReactNode } from 'react'
+import { AnimatePresence, motion, useIsPresent, useReducedMotion } from 'framer-motion'
 import { Timer, Button, StatusMessage, OrbitSlider } from 'components'
 import { useBreakpoint } from 'hooks'
+import { useMotionTokens, type MotionTokens } from '../../hooks/useMotionTokens'
 import { useAutonomyWidget } from './hooks/useAutonomyWidget'
-import { ACTION_CONFIGS } from './AutonomyWidget.configs'
-import type { AutonomyWidgetState } from './AutonomyWidget.types'
+import { getActionConfig } from './AutonomyWidget.configs'
+import type { ActionButton } from './AutonomyWidget.types'
 import {
+  OrbitIcon, ArrowTurnDownLeftIcon, ArrowDownToLineIcon,
+  BinocularsIcon, RouteIcon, XSquareIcon, type IconName,
+} from 'icons'
+
+const timerIcons = {
+  NavigationIcon: RouteIcon,
+  HomeIcon: ArrowTurnDownLeftIcon,
   OrbitIcon,
+  ArrowDown: ArrowDownToLineIcon,
+  UserIcon: BinocularsIcon,
+  ManualIcon: XSquareIcon,
+  ClockIcon: XSquareIcon,
+  RouteIcon,
   ArrowTurnDownLeftIcon,
   ArrowDownToLineIcon,
   BinocularsIcon,
-  RouteIcon,
   XSquareIcon,
-  type IconName,
-} from 'icons'
-
-/**
- * AutonomyWidget is a dumb/presentational component that displays mission controls.
- * All state is managed through the AutonomyWidgetProvider context.
- *
- * @remarks
- * - Must be wrapped in AutonomyWidgetProvider to function
- * - Purely presentational - no internal state management
- * - Responsive design with compact/expanded modes
- * - Dynamic UI based on current action type
- */
-// Map timer icon names to actual icon components
-const getTimerIcon = (iconName: string) => {
-  const iconMap: Record<
-    string,
-    React.ComponentType<{ width?: number; height?: number; className?: string }>
-  > = {
-    // Legacy mapping keys (for backward compatibility)
-    NavigationIcon: RouteIcon,
-    HomeIcon: ArrowTurnDownLeftIcon,
-    OrbitIcon: OrbitIcon,
-    ArrowDown: ArrowDownToLineIcon,
-    UserIcon: BinocularsIcon,
-    ManualIcon: XSquareIcon,
-    ClockIcon: XSquareIcon,
-    // Direct icon component names (new approach)
-    RouteIcon: RouteIcon,
-    ArrowTurnDownLeftIcon: ArrowTurnDownLeftIcon,
-    ArrowDownToLineIcon: ArrowDownToLineIcon,
-    BinocularsIcon: BinocularsIcon,
-    XSquareIcon: XSquareIcon,
-  }
-  console.log(
-    '🎯 Timer Icon Debug:',
-    iconName,
-    '->',
-    iconMap[iconName]?.name || 'fallback'
-  )
-  return iconMap[iconName] || XSquareIcon
 }
 
-export const AutonomyWidget: React.FC = () => {
-  const { state, setState } = useAutonomyWidget()
-  const { action, actionName, time, expanded, isPaused, buttons, timerIcon } =
-    state
+const StatusHandoff = ({ message, timing }: { message: string; timing: MotionTokens }) => {
+  return (
+    <motion.div
+      className="absolute inset-0"
+      aria-hidden="true"
+      initial={{ opacity: 0, y: 4 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -4, transition: { duration: timing.fast } }}
+      transition={{ duration: timing.feedback, ease: timing.ease }}>
+      <StatusMessage message={message} />
+    </motion.div>
+  )
+}
 
-  // Use a reasonable breakpoint that keeps timer visible at normal desktop sizes
-  const isCompact = useBreakpoint(600)
+const useActionRowFocus = (present: boolean, onExitFocus: () => void) => {
+  const rowRef = useRef<HTMLDivElement>(null)
+  useLayoutEffect(() => {
+    if (!present && rowRef.current?.contains(document.activeElement)) onExitFocus()
+  }, [present, onExitFocus])
+  useLayoutEffect(() => {
+    const row = rowRef.current
+    return () => {
+      if (!row?.contains(document.activeElement)) return
+      // Let the same commit remove an obsolete disclosure before choosing its fallback.
+      queueMicrotask(() => {
+        if (document.activeElement === document.body || row.contains(document.activeElement)) onExitFocus()
+      })
+    }
+  }, [onExitFocus])
+  return rowRef
+}
 
-  // Get the current action config to use pausedName and pausedButtons
-  const currentConfig = ACTION_CONFIGS[action]
-  const currentActionName = isPaused
-    ? currentConfig?.pausedName || 'Mission Paused'
-    : actionName
+const StaticActionRow = ({ id, children, onExitFocus }: {
+  id: string
+  children: ReactNode
+  onExitFocus: () => void
+}) => {
+  const rowRef = useActionRowFocus(true, onExitFocus)
+  return (
+    <div ref={rowRef} id={id} className="px-(--widget-padding) pb-(--widget-padding) w-full" role="group" aria-label="Mission actions">
+      <div className="flex flex-row gap-2">{children}</div>
+    </div>
+  )
+}
 
-  // Use pausedButtons when paused, regular buttons when active
-  const currentButtons = isPaused ? currentConfig?.pausedButtons || [] : buttons
-
-  // Simple logic: if no buttons, don't show expand/collapse
-  const hasButtons = currentButtons.length > 0
-  const showExpandCollapse = hasButtons
-
-  // Get the appropriate timer icon component
-  const TimerIconComponent = getTimerIcon(timerIcon || 'NavigationIcon')
-
-  // Generate tooltip based on paused state and Figma patterns
-  const timerTooltip = isCompact
-    ? isPaused
-      ? currentConfig?.actionTooltip // Show time remaining when paused (e.g., "2:41")
-      : currentConfig?.actionTooltip // Show short action description when running (e.g., "ETA to Dock")
-    : undefined
-
-  // Button click handler
-  const handleButtonClick = (button: { id: string }) => {
-    console.log('Button clicked:', button.id)
-  }
-
-  // Pause/resume handler
-  const handlePauseToggle = () => {
-    setState((prev: AutonomyWidgetState) => ({
-      ...prev,
-      isPaused: !prev.isPaused,
-    }))
-  }
-
-  // Expand/collapse handler
-  const handleExpandToggle = () => {
-    setState((prev: AutonomyWidgetState) => ({
-      ...prev,
-      expanded: !prev.expanded,
-    }))
-  }
+const ActionRow = ({ id, children, timing, onExitFocus }: {
+  id: string
+  children: ReactNode
+  timing: MotionTokens
+  onExitFocus: () => void
+}) => {
+  const present = useIsPresent()
+  const rowRef = useActionRowFocus(present, onExitFocus)
 
   return (
-    <div
-      className={`autonomy-widget-base ${
-        expanded && !isCompact ? 'h-[88px]' : 'h-[48px]'
-      } ${isCompact && '!w-[88px]'} bg-gray-900 text-white`}>
-      <div className="flex justify-between items-center w-full px-2 py-2 gap-2">
+    <motion.div
+      ref={rowRef}
+      id={present ? id : undefined}
+      role={present ? 'group' : undefined}
+      aria-label={present ? 'Mission actions' : undefined}
+      aria-hidden={!present || undefined}
+      inert={!present}
+      className="absolute inset-x-0 px-(--widget-padding) pb-(--widget-padding)"
+      style={{
+        top: 'calc(var(--widget-height) - 2 * var(--widget-border-width))',
+        pointerEvents: present ? 'auto' : 'none',
+      }}
+      initial={{ opacity: 0, y: -6 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -4, transition: { duration: timing.fast } }}
+      transition={{ duration: timing.normal, ease: timing.ease }}>
+      <div className="flex flex-row gap-2">{children}</div>
+    </motion.div>
+  )
+}
+
+/**
+ * Mission status and controls backed by the nearest widget provider.
+ *
+ * @remarks
+ * Pause and expansion update shared state. Action buttons emit command intent;
+ * application callbacks own transport and acknowledgment. Compact mode is based
+ * on viewport width and removes the secondary control row from the tab order.
+ */
+export const AutonomyWidget: React.FC = () => {
+  const { state, setState, onAction, onOrbitProgressChange } = useAutonomyWidget()
+  const { action, actionName, time, expanded, isPaused, buttons, timerIcon } = state
+  const isCompact = useBreakpoint(600)
+  const controlsId = useId()
+  const disclosureRef = useRef<HTMLButtonElement>(null)
+  const pauseRef = useRef<HTMLButtonElement>(null)
+  const reducedMotion = useReducedMotion()
+  const timing = useMotionTokens()
+  const layoutTransition = { type: 'spring' as const, duration: timing.layout, bounce: 0 }
+  const config = getActionConfig(action)
+  const currentActionName = isPaused ? config.pausedName || 'Mission Paused' : actionName
+  const currentButtons = isPaused ? config.pausedButtons || [] : buttons
+  const hasButtons = currentButtons.length > 0
+  const showControls = expanded && hasButtons && !isCompact
+  const actionRowKey = `${action}:${isPaused ? 'paused' : 'running'}`
+  const TimerIcon = timerIcons[(timerIcon || 'NavigationIcon') as keyof typeof timerIcons] || XSquareIcon
+  const restoreActionFocus = useCallback(() => (disclosureRef.current ?? pauseRef.current)?.focus(), [])
+
+  const handleAction = (button: ActionButton) => {
+    button.onClick?.()
+    onAction?.({ type: 'mission-action', action, id: button.id })
+  }
+
+  const handleOrbitChange = (progress: number) => {
+    setState(previous => ({ ...previous, orbitProgress: progress }))
+    onOrbitProgressChange?.(progress)
+  }
+
+  const actionControls = currentButtons.map(button => button.component === 'orbit-slider' ? (
+    <OrbitSlider
+      key={button.id}
+      min={0} max={100} step={5}
+      value={state.orbitProgress ?? 50}
+      onChange={handleOrbitChange}
+    />
+  ) : (
+    <Button
+      key={button.id}
+      icon={button.icon as IconName}
+      label={button.label || undefined}
+      variant={button.variant}
+      ariaLabel={button.ariaLabel || button.label}
+      tooltip={button.tooltip || (!button.label ? button.ariaLabel : undefined)}
+      onClick={() => handleAction(button)}
+      size={button.label ? 'auto' : 32}
+      flex
+    />
+  ))
+
+  return (
+    <motion.div
+      className="autonomy-widget-base"
+      layout={reducedMotion ? false : 'position'}
+      initial={false}
+      transition={{ layout: layoutTransition }}
+      role="group"
+      aria-label="Autonomy controls"
+      data-expanded={showControls}
+      data-compact={isCompact}>
+      <motion.div
+        className="autonomy-widget-surface"
+        aria-hidden="true"
+        layout={!reducedMotion}
+        initial={false}
+        style={{ originY: 0 }}
+        transition={{ layout: layoutTransition }}
+      />
+      <div className="autonomy-widget-header flex justify-between items-center w-full gap-2">
         <div className="flex items-center gap-2 min-w-0 flex-1">
+          <span className="sr-only" role="status" aria-live="polite" aria-atomic="true">{currentActionName}</span>
           <Timer
-            key="autonomy-timer"
             duration={time}
             state={isPaused ? 'paused' : 'running'}
-            icon={TimerIconComponent}
-            tooltip={timerTooltip}
+            icon={TimerIcon}
+            tooltip={isCompact ? config.actionTooltip : undefined}
           />
           {!isCompact && (
-            <div className="min-w-0 flex-1">
-              <StatusMessage message={currentActionName} />
+            <div className="min-w-0 flex-1 relative h-5 overflow-hidden" aria-hidden="true">
+              {reducedMotion ? <StatusMessage message={currentActionName} /> : (
+                <AnimatePresence initial={false}>
+                  <StatusHandoff key={currentActionName} message={currentActionName} timing={timing} />
+                </AnimatePresence>
+              )}
             </div>
           )}
         </div>
         <div className="flex items-center gap-2">
-          {!isCompact && showExpandCollapse && (
+          {!isCompact && hasButtons && (
             <Button
-              icon={expanded ? 'ChevronUpIcon' : 'ChevronDownIcon'}
-              tooltip={expanded ? 'Collapse Controls' : 'View Controls'}
+              ref={disclosureRef}
+              icon={showControls ? 'ChevronUpIcon' : 'ChevronDownIcon'}
+              tooltip={showControls ? 'Collapse controls' : 'View controls'}
               variant="caret-borderless"
-              ariaLabel={expanded ? 'Collapse' : 'Expand'}
-              onClick={handleExpandToggle}
-              size={32}
+              ariaLabel={showControls ? 'Collapse' : 'Expand'}
+              aria-expanded={showControls}
+              aria-controls={controlsId}
+              onClick={() => setState(previous => ({ ...previous, expanded: !previous.expanded }))}
             />
           )}
           <Button
+            ref={pauseRef}
             icon={isPaused ? 'PlayIcon' : 'StopSignIcon'}
             variant={isPaused ? 'play-borderless' : 'stop-borderless'}
-            tooltip={isPaused ? 'Resume Mission' : 'Pause Mission'}
+            tooltip={isPaused ? 'Resume mission' : 'Pause mission'}
             ariaLabel={isPaused ? 'Resume' : 'Pause'}
-            onClick={handlePauseToggle}
-            size={32}
+            onClick={() => setState(previous => ({ ...previous, isPaused: !previous.isPaused }))}
           />
         </div>
       </div>
-      {expanded && hasButtons && (
-        <div className="px-2 pb-2 w-full">
-          {/* Render action buttons directly for better control over dynamic UI */}
-          <div className="flex flex-row gap-2 flex-wrap">
-            {currentButtons.map((button) => {
-              // Handle special component types
-              if (button.component === 'orbit-slider') {
-                return (
-                  <OrbitSlider
-                    key={button.id}
-                    min={0}
-                    max={100}
-                    step={5}
-                    progress={state.orbitProgress}
-                    onChange={(value) => console.log('Orbit progress:', value)}
-                  />
-                )
-              }
-
-              // Regular button rendering
-              return (
-                <Button
-                  key={button.id}
-                  icon={button.icon as IconName} // Cast to IconName since button.icon comes from action configs
-                  label={expanded ? button.label : undefined} // Show text labels in expanded mode
-                  variant={button.variant as 'action'}
-                  ariaLabel={button.ariaLabel || button.label}
-                  tooltip={expanded ? undefined : button.tooltip} // Only show tooltip in compact mode
-                  onClick={() => handleButtonClick(button)}
-                  size={expanded ? 'auto' : 32} // Auto size for text labels
-                />
-              )
-            })}
-          </div>
-        </div>
+      {reducedMotion ? showControls && (
+        <StaticActionRow key={actionRowKey} id={controlsId} onExitFocus={restoreActionFocus}>
+          {actionControls}
+        </StaticActionRow>
+      ) : (
+        <AnimatePresence initial={false}>
+          {showControls && (
+            <ActionRow
+              key={actionRowKey}
+              id={controlsId}
+              timing={timing}
+              onExitFocus={restoreActionFocus}>
+              {actionControls}
+            </ActionRow>
+          )}
+        </AnimatePresence>
       )}
-    </div>
+    </motion.div>
   )
 }
