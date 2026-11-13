@@ -1,0 +1,60 @@
+import { Meta, Source } from '@storybook/addon-docs/blocks';
+import './documentation.css';
+
+<Meta title="Engineering/Verification" />
+
+# Verification
+
+Rendering a component is one check. Exercising the state transitions, limits, and application entry point is another. This project runs both layers in a real Chromium browser.
+
+## Follow an interaction
+
+Open <a href="/?path=/story/components-autonomywidget--orbit-interaction&addonPanel=storybook/interactions/panel" target="_top">Orbit Interaction</a> and expand the Interactions panel. The test reaches the upper orbit limit from the current progress, checks that the right caret disables, and clicks left four times to return to 80%.
+
+The play function uses the same named buttons a person uses. It verifies the disabled state after the action, rather than asserting a CSS class.
+
+<a href="/?path=/story/components-autonomywidget--expanded-interaction&addonPanel=storybook/interactions/panel" target="_top">Expanded Interaction</a> checks the typed action payload, removal of collapsed controls, and paused action set. <a href="/?path=/story/components-autonomywidget--mission-interaction&addonPanel=storybook/interactions/panel" target="_top">Mission Interaction</a> isolates pause and resume. The matching Default, Expanded, and Orbit Mode stories stay manual for presentation.
+
+<div className="widget-docs-table" role="region" aria-label="Verification layers" tabIndex={0}>
+<table>
+  <thead><tr><th>Layer</th><th>Checks</th><th>Evidence</th></tr></thead>
+  <tbody>
+    <tr><td>Component stories</td><td>Representative mission states, button variants, tooltips, timer limits, and completion.</td><td>Canvas and the Controls panel.</td></tr>
+    <tr><td>Story interactions</td><td>Pointer and keyboard activation, disabled controls, pause/resume, expansion, tooltip visibility, and orbit limits.</td><td>Interactions panel and the Storybook test runner.</td></tr>
+    <tr><td>Behavior tests</td><td>Timer reset and progress clamping, completion under StrictMode, context requirements, ownership modes, native props, breakpoint changes, config callbacks, and fallback icons.</td><td><code>src/components/behavior.test.tsx</code> and focused component contract/behavior tests.</td></tr>
+    <tr><td>Application startup</td><td>The real <code>main.tsx</code> mounts and exposes working pause/resume and waypoint controls.</td><td><code>src/startup.test.tsx</code>.</td></tr>
+    <tr><td>Visual review</td><td>Chromatic captures the rendered stories. A person reviews and accepts visual baselines.</td><td>Chromatic build and comparison views.</td></tr>
+  </tbody>
+</table>
+</div>
+
+## Reproduce the checks
+
+<Source dark language="sh" code={`pnpm install
+pnpm exec playwright install chromium --only-shell
+pnpm test
+pnpm test:coverage
+pnpm build
+pnpm build-storybook`} />
+
+`pnpm test` runs the `storybook` and `behavior` projects. The coverage command writes their combined report to `coverage-all-tests/index.html`. That directory is separate from the Storybook panel’s story-only `coverage/` output, so running a story check does not replace the combined report.
+
+Story tests use a reduced-motion browser preference so interaction assertions and accessibility scans evaluate settled states. Dedicated motion tests exercise normal-motion geometry, mid-flight reversal, repeated activation, immediate exit inertness, and the reduced-motion alternative. The manual Storybook uses the viewer’s actual preference.
+
+### Why an entry point can show zero coverage
+
+Storybook renders stories without loading the standalone application entry point. Its coverage panel can therefore report `main.tsx` as uncovered. The startup test runs in the behavior project and covers that entry point. Use the combined report to assess the whole application.
+
+Use coverage to find unexecuted paths and behavioral assertions to assess the result. Read the current combined report rather than presenting a percentage copied into a document. A passing snapshot, a passing interaction, and an accepted visual baseline each establish different evidence.
+
+## Accessibility review
+
+Buttons have accessible names, use native disabled semantics, and can be activated with a keyboard. Status messages use a polite live region. Tooltips support focus and hover and can be dismissed with Escape. Orbit uses two native buttons, not an ARIA slider. Reduced motion has an explicit presentation path.
+
+The accessibility addon exposes automated findings in each story, and violations fail the test run. This catches regressions; it does not establish WCAG conformance. Check keyboard focus, tooltip behavior, screen-reader announcements, touch target sizes, and responsive clipping before integrating the widget into a product.
+
+## Publish intentionally
+
+Run `pnpm chromatic` to publish the current local Storybook. The script reads `CHROMATIC_PROJECT_TOKEN` from the gitignored `.env.local`; in CI, provide the same variable as a repository secret. The token does not belong in story args, source examples, or tracked configuration.
+
+Keep UI changes reviewable. A successful upload and an accepted visual baseline are separate outcomes; the reviewer should inspect the comparison before accepting it.

@@ -1,0 +1,55 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+import { TokenTrace, ComponentStates, MotionStudy, GeometryReference } from './DesignSystemReference';
+import './documentation.css';
+
+<Meta title="Overview/Design system" parameters={{ docs: { toc: { headingSelector: 'h2' } } }} />
+
+<div className="docs-chapter-label">Design system</div>
+
+# Small surface. Shared decisions.
+
+A mission can change without changing the visual language. Surface, type, action color, geometry, and motion share a compact token system, so the widget’s states belong to the same family.
+
+<TokenTrace />
+
+## Give every color a job
+
+Neutral surfaces carry information. Red and blue identify pause and resume treatments; orbit blue marks a reference and a current value. A focus ring stays neutral. Color supports the label, icon, and control state rather than replacing them.
+
+The system is implemented directly in `src/styles/theme.css`: palette primitives feed semantic roles, and components consume those roles. Palette definitions, semantic aliases, and component rules live together in that stylesheet. The reference reads their current CSS values.
+
+## Build a family, then its states
+
+These are the actual shared components. Hover a control, Tab to it, activate Pause, and compare the disabled state. The same Button API is used inside the mission widget.
+
+<ComponentStates />
+
+`default` is the neutral outlined treatment; `action` is the raised secondary treatment. `play` and `stop` carry resume and pause colors. `caret` is for disclosure. Their supported borderless treatments are `play-borderless`, `stop-borderless`, and `caret-borderless`.
+
+Use the action’s meaning to choose its variant. A `stop` color does not implement a drone stop command; the consuming application handles the callback.
+
+## Add motion that connects the states
+
+Expansion should feel attached to the header. Pause and resume should exchange roles without an abrupt flash. Orbit progress should travel to its new value while the reference stays fixed. Motion makes these relationships visible while callbacks and accessible values remain responsive.
+
+<MotionStudy />
+
+The study runs the real widget through monitoring, expansion, pause, resume, and orbit adjustment. It starts only when you press Replay transitions, runs once, and hands control back as soon as you interact. The operating-system reduced-motion preference has its own immediate rendering path.
+
+Durations and easing come from the same stylesheet as color and geometry. Timing is a system decision; an isolated animation does not introduce its own arbitrary curve.
+
+## Enlarge the target, preserve the reading scale
+
+<GeometryReference />
+
+On fine pointers, the resting widget is 240 × 48px and expands to 88px tall. Coarse-pointer controls grow to 44px, giving the first row a 60px height and the expanded widget a 112px height. The timer ring stays 32px and icons stay 16px.
+
+Below a 600px browser viewport, compact mode retains time and pause/resume while secondary actions leave keyboard navigation. Compact widths are 88px for fine pointers and 112px for coarse pointers. This is viewport responsiveness, not a container query.
+
+The timer uses tabular numerals in a fixed ring, with smaller type for longer durations. Status remains a single line. These are deliberate constraints for a compact surface, not a general typography scale for an entire product.
+
+## Change the system at its source
+
+Change a shared surface in the semantic layer, then inspect the widget and every consumer. Change a mission’s available actions in `AutonomyWidget.configs.ts`, then inspect its active and paused presentation. Keep visual decisions in tokens and mission decisions in configuration.
+
+For the full live value table, open <a href="/?path=/docs/foundation-tokens--docs" target="_top">Foundation / Tokens</a>. For the public API and native component contracts, open <a href="/?path=/docs/engineering-component-api--docs" target="_top">Engineering / Component API</a>. Contributor rules live in `DESIGN.md` and `docs/design/`.

@@ -1,0 +1,23 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+import { TokenReference } from './TokenReference';
+import './documentation.css';
+
+<Meta title="Foundation/Tokens" />
+
+# Tokens
+
+The widget shares one semantic layer for surface, content, action, focus, motion, and geometry. The reference below resolves the same CSS custom properties used by the components, so a theme change appears here without maintaining a second palette.
+
+<TokenReference />
+
+## Choose a role before a value
+
+Components use semantic tokens such as `--color-surface`, `--color-content-primary`, and `--color-action-pause`. Palette primitives support those definitions and existing compatibility; they are not the styling API for a new component.
+
+The common surface stays neutral. Raised action controls, pause/resume colors, orbit progress, and tooltips have named roles because they communicate different functions. A local hex override would detach a component from those roles and reintroduce inconsistent backgrounds.
+
+## Preserve the hierarchy
+
+Status, the timer, and the primary action stay in the first row. Expansion reveals mission-specific controls. Compact mode removes that secondary row; coarse-pointer geometry enlarges the targets without enlarging the icons. Motion is limited to state changes that benefit from continuity, with an explicit reduced-motion path.
+
+For implementation rules and closed component variants, use the repository’s `DESIGN.md` and `docs/design/` reference. For the state and event boundary, open <a href="/?path=/docs/engineering-integration--docs" target="_top">Integration</a>.

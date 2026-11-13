@@ -1,0 +1,149 @@
+import { Meta, Source } from '@storybook/addon-docs/blocks';
+import './documentation.css';
+
+<Meta title="Engineering/Component API" />
+
+# Component API
+
+Contracts for the exported components and widget state. For a working composition, use <a href="/?path=/docs/engineering-integration--docs" target="_top">Integration</a>; for the data-flow diagram and host example, use <a href="/?path=/docs/overview-architecture--docs" target="_top">Architecture</a>. Import the shared theme once at the application entry point.
+
+## Widget state and provider
+
+`AutonomyWidget` takes no mission props. It reads the nearest `AutonomyWidgetProvider`. The provider accepts `children`, the optional observers below, and exactly one ownership mode:
+
+<Source dark language="ts" code={`type Ownership =
+  | { initialState?: AutonomyWidgetStateInput; state?: never; onStateChange?: (next: AutonomyWidgetState) => void }
+  | { state: AutonomyWidgetStateInput; initialState?: never; onStateChange: (next: AutonomyWidgetState) => void };`} />
+
+Local `initialState` is read on mount. With no input, the provider starts `waypoint-mission` at 90 seconds. Controlled mode renders the host’s `state`: `onStateChange` is a proposal, and the host must pass its accepted value back. A host that declines the proposal keeps the rendered value unchanged. Do not combine ownership modes or switch the owner to simulate command acknowledgment.
+
+<div className="widget-docs-table" role="region" aria-label="Widget state inputs" tabIndex={0}>
+<table>
+<thead><tr><th scope="col">Input</th><th scope="col">Type / default</th><th scope="col">Contract</th></tr></thead>
+<tbody>
+<tr><td><code>action</code></td><td><code>ActionType</code>; required when supplying state</td><td>Selects the compiled mission configuration. Unknown runtime values resolve to idle.</td></tr>
+<tr><td><code>time</code></td><td><code>number</code>; required</td><td>Duration, normalized to whole seconds from 0–3,599. Non-finite input becomes 0.</td></tr>
+<tr><td><code>isPaused</code></td><td><code>boolean</code>; false</td><td>Preserves remaining time and selects paused presentation.</td></tr>
+<tr><td><code>expanded</code></td><td><code>boolean</code>; false</td><td>Shows available secondary controls at viewports of at least 600px. Compact mode removes them from focus and accessibility immediately, then completes their visual exit.</td></tr>
+<tr><td><code>orbitProgress</code></td><td><code>number</code>; 50</td><td>Clamped to 0–100. Omitted or non-finite input becomes 50.</td></tr>
+<tr><td><code>actionName / timerIcon / buttons</code></td><td>Derived output</td><td>Compatibility input accepts these fields, but the resolver overwrites them from configuration.</td></tr>
+</tbody>
+</table>
+</div>
+
+`createAutonomyWidgetState(input): AutonomyWidgetState` performs that normalization synchronously. `AutonomyWidgetStateInput` requires `action` and `time`; other state fields are optional. `useAutonomyWidget()` returns `state`, React-style `setState`, and the configured observers. Its setter accepts a full state or an updater of the previous state, not a partial patch. The hook throws `useAutonomyWidget must be used within an AutonomyWidgetProvider` outside its provider.
+
+<div className="widget-docs-table" role="region" aria-label="Widget callbacks" tabIndex={0}>
+<table>
+<thead><tr><th scope="col">Callback</th><th scope="col">Payload</th><th scope="col">Trigger</th></tr></thead>
+<tbody>
+<tr><td><code>onStateChange</code></td><td><code>AutonomyWidgetState</code></td><td>A normalized next-state proposal from pause, resume, expansion, or orbit adjustment. Required in controlled mode; optional observer in local mode.</td></tr>
+<tr><td><code>onAction</code></td><td><code>{`{ type: 'mission-action', action: ActionType, id: string }`}</code></td><td>A configured secondary action. Its optional local <code>onClick</code> also runs. This event does not automatically change the mission.</td></tr>
+<tr><td><code>onOrbitProgressChange</code></td><td><code>number</code></td><td>The requested bounded percentage, after a shared-state update is requested. The host may still decline that state proposal.</td></tr>
+</tbody>
+</table>
+</div>
+
+The input mission key and output button ID are different: `action: 'waypoint-mission'` chooses a mission; `id: 'next'` identifies an action pressed within it. Pause/resume/expansion produce state proposals rather than `mission-action` events. No callback implies external dispatch or acknowledgment.
+
+`ActionType` is closed: `waypoint-mission`, `waypoint-single-point`, `returning-to-dock`, `returning-to-safe-point`, `landing`, `mission-paused`, `fly-to-point-paused`, `orbiting`, `orbit-paused`, `tracking-subject`, `searching-for-subject`, `manual`, and `idle`. Prefer an active mission plus `isPaused`; the three paused keys are retained fixtures. Configuration is compiled TypeScript, not arbitrary runtime JSON. `primaryButton` and `iconRotation` metadata do not drive the current renderer.
+
+## Button and Controls
+
+`ButtonProps` extends native `ButtonHTMLAttributes<HTMLButtonElement>`. The ref targets the real button. Native events, form attributes, IDs, ARIA attributes, and `className` pass through; `type` defaults to `button` and `disabled` to false. Visible text can name a button; every icon-only button requires a non-empty name. Use an anchor for navigation.
+
+<div className="widget-docs-table" role="region" aria-label="Button options" tabIndex={0}>
+<table>
+<thead><tr><th scope="col">Prop</th><th scope="col">Type / default</th><th scope="col">Behavior</th></tr></thead>
+<tbody>
+<tr><td><code>variant</code></td><td><code>ButtonVariant</code>; default</td><td>Exactly <code>default | stop | play | action | caret | stop-borderless | play-borderless | caret-borderless</code>. No other variants exist.</td></tr>
+<tr><td><code>size</code></td><td><code>{`32 | 'auto'`}</code>; 32</td><td>Square control or content width. The square target expands to 44px on coarse pointers.</td></tr>
+<tr><td><code>icon</code></td><td><code>IconName</code>; omitted</td><td>Shared icon key. An invalid runtime key logs an error and renders a warning fallback.</td></tr>
+<tr><td><code>label / children</code></td><td><code>string / ReactNode</code>; omitted</td><td>Visible content; children take precedence over label.</td></tr>
+<tr><td><code>ariaLabel</code></td><td><code>string</code>; omitted</td><td>Compatibility alias that takes precedence over native <code>aria-label</code>. Prefer one naming mechanism.</td></tr>
+<tr><td><code>tooltip</code></td><td><code>string</code>; omitted</td><td>Hover/focus help associated by <code>aria-describedby</code> while visible. Escape dismisses; disabled buttons do not show it.</td></tr>
+<tr><td><code>flex</code></td><td><code>boolean</code>; false</td><td>Shares available width with sibling controls.</td></tr>
+</tbody>
+</table>
+</div>
+
+`ControlsProps` extends native div attributes and forwards a div ref. `buttons?: Omit<ButtonProps, 'flex'>[]` defaults to four named waypoint controls; each renders with `flex`. An empty array renders an empty group. Default semantics are `role="group"` and `aria-label="Mission controls"`; normal Tab navigation is used, not a roving toolbar. `className` merges and caller `style` overrides the default 50px minimum width.
+
+<Source dark language="tsx" code={`<Button
+  icon="CameraViewfinderIcon" aria-label="Waypoint settings"
+  tooltip="Configure waypoint behavior" variant="action"
+  disabled={isPending} onClick={openSettings}
+  ref={settingsButtonRef}
+/>`} />
+
+The button composes consumer hover/focus/key handlers before its help behavior. Calling `event.preventDefault()` in one of those handlers suppresses the associated internal help update. Existing `aria-describedby` IDs are preserved when the tooltip ID is added.
+
+## Timer
+
+`TimerProps` is an explicit interface rather than a native div attribute bag; it does not forward a ref. The ring is 32px. A tooltip adds a focusable help target sized for the pointer environment. The accessible SVG name always includes remaining time, including condensed mode.
+
+<div className="widget-docs-table" role="region" aria-label="Timer options" tabIndex={0}>
+<table>
+<thead><tr><th scope="col">Prop</th><th scope="col">Type / default</th><th scope="col">Behavior</th></tr></thead>
+<tbody>
+<tr><td><code>duration</code></td><td><code>number</code>; required</td><td>Whole seconds 0–3,599; non-finite input becomes 0. A changed effective duration restarts the countdown.</td></tr>
+<tr><td><code>state</code></td><td><code>{`'running' | 'paused'`}</code>; running</td><td>Pause preserves remaining time; resume continues it.</td></tr>
+<tr><td><code>progress</code></td><td><code>number</code>; timed fraction</td><td>Ring override clamped to 0–1; non-finite input uses timed progress. Does not change countdown text.</td></tr>
+<tr><td><code>condensed</code></td><td><code>boolean</code>; false</td><td>Shows the icon immediately, including paused and complete states. Otherwise an active run shows text for six seconds before the icon.</td></tr>
+<tr><td><code>icon</code></td><td>Component accepting optional width, height, className; RouteIcon</td><td>Rendered mission identity; it does not change countdown state.</td></tr>
+<tr><td><code>tooltip</code></td><td><code>string</code>; omitted</td><td>Hover/focus help with Escape dismissal.</td></tr>
+<tr><td><code>onComplete</code></td><td><code>() =&gt; void</code>; omitted</td><td>Once when a positive running countdown reaches zero. Initializing at zero does not call it.</td></tr>
+</tbody>
+</table>
+</div>
+
+The countdown is local interval state, not authoritative telemetry. Changing only the mission with equal duration preserves the countdown. Define a host reset/remount policy when a fresh run at the same duration is required. Reduced motion retains the same text/icon states without animated transitions.
+
+## OrbitSlider
+
+`OrbitSliderProps` extends native div attributes excluding `onChange` and `defaultValue`; it forwards a div ref. It is a group of two buttons and a read-only meter, not a draggable slider. Its default accessible name is “Orbit progress controls.”
+
+<div className="widget-docs-table" role="region" aria-label="Orbit options" tabIndex={0}>
+<table>
+<thead><tr><th scope="col">Prop</th><th scope="col">Type / default</th><th scope="col">Behavior</th></tr></thead>
+<tbody>
+<tr><td><code>value</code></td><td><code>number</code>; omitted</td><td>Controlled percentage. With an unchanged value, the control stays read-only even if it emits change requests.</td></tr>
+<tr><td><code>defaultValue</code></td><td><code>number</code>; 50</td><td>Initial uncontrolled percentage; later default changes do not reset it.</td></tr>
+<tr><td><code>progress</code></td><td><code>number</code>; omitted</td><td>Legacy uncontrolled input that initializes and resynchronizes. Prefer value for new controlled code.</td></tr>
+<tr><td><code>min / max</code></td><td><code>number</code>; 0 / 100</td><td>Normalized to 0–100 and sorted if reversed. Non-finite bounds use 0 / 100.</td></tr>
+<tr><td><code>step</code></td><td><code>number</code>; 1</td><td>Positive finite increment; invalid input becomes 1. The widget uses 5.</td></tr>
+<tr><td><code>disabled</code></td><td><code>boolean</code>; false</td><td>Disables both native buttons. Each also disables at its corresponding bound.</td></tr>
+<tr><td><code>onChange</code></td><td><code>(percentage: number) =&gt; void</code>; omitted</td><td>Next bounded percentage after an enabled caret is activated. An unchanged bounded value emits nothing.</td></tr>
+</tbody>
+</table>
+</div>
+
+Current percentage is clamped to the normalized range; non-finite input falls back to 50 within that range. Controlled value takes precedence over internal state. Without value, initialization uses defaultValue, then legacy progress, then 50. The meter exposes its bounds, current value, and percentage text; the buttons are named “Decrease orbit progress” and “Increase orbit progress.”
+
+<Source dark language="tsx" code={`const [progress, setProgress] = useState(80);
+<OrbitSlider value={progress} onChange={setProgress} step={5} />`} />
+
+## Tooltip and StatusMessage
+
+`TooltipProps` extends native div attributes and forwards a div ref. It portals to `document.body` with `role="tooltip"`; it is hoverable, non-focusable help. Use Button or Timer’s tooltip prop for those triggers; a custom trigger must own visibility and `aria-describedby`.
+
+<div className="widget-docs-table" role="region" aria-label="Tooltip options" tabIndex={0}>
+<table>
+<thead><tr><th scope="col">Prop</th><th scope="col">Type / default</th><th scope="col">Behavior</th></tr></thead>
+<tbody>
+<tr><td><code>targetRect</code></td><td><code>DOMRect | null</code>; required</td><td>Trigger bounds in viewport coordinates. Null prevents rendering.</td></tr>
+<tr><td><code>visible</code></td><td><code>boolean</code>; required</td><td>Requests help. Escape dismisses until a new visibility cycle.</td></tr>
+<tr><td><code>children</code></td><td><code>ReactNode</code>; required</td><td>Short, non-interactive content. Use a popover/dialog for focusable controls.</td></tr>
+<tr><td><code>anchorRef</code></td><td><code>RefObject&lt;HTMLElement | null&gt;</code>; omitted</td><td>Refreshes trigger bounds during scroll and resize.</td></tr>
+<tr><td><code>onDismiss</code></td><td><code>() =&gt; void</code>; omitted</td><td>Notifies the owner of Escape dismissal. Hover retention is owned by the trigger interaction hook.</td></tr>
+</tbody>
+</table>
+</div>
+
+Tooltip uses a 14px token gap, 8px viewport edge clamp, and flips above when space below is insufficient. `StatusMessage` accepts required `message: string` and optional `className`; it does not accept arbitrary native props or forward a ref. It renders `role="status"` with a polite live region and one-line clipping without ellipsis. Use visible text for required explanations and an alert pattern for urgent interruption.
+
+## Import surface
+
+Components are source exports in this repository, not a published package. From a file in `src/docs`, import from `../components`; project source can also use the configured `components` alias. Each component folder exposes its component and prop type. The root barrel exports `AutonomyWidget`, `AutonomyWidgetProvider`, `createAutonomyWidgetState`, `useAutonomyWidget`, `Button`, `Controls`, `Timer`, `OrbitSlider`, `Tooltip`, and `StatusMessage`. Its public types are `AutonomyWidgetProviderProps`, `AutonomyWidgetStateInput`, `AutonomyWidgetState`, `AutonomyWidgetActionEvent`, `ActionType`, `ButtonProps`, `ButtonVariant`, `ButtonSize`, `ControlsProps`, `TimerProps`, `OrbitSliderProps`, `TooltipProps`, and `StatusMessageProps`. The mission catalog remains an internal build-time extension point.
+
+The source interfaces above remain the authority; <a href="/?path=/docs/overview-design-system--docs" target="_top">Design system</a> explains when to choose each treatment.

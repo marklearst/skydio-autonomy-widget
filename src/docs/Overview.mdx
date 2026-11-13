@@ -1,0 +1,64 @@
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
+import * as WidgetStories from '../components/AutonomyWidget/AutonomyWidget.stories';
+import './documentation.css';
+
+<Meta title="Overview/Introduction" id="overview" />
+
+# Autonomy Widget
+
+Mission status, time remaining, and the next available control in one compact surface.
+This React implementation explores Skydio’s Rivit design language through live mission states, configurable controls, and browser interaction tests.
+
+<Canvas of={WidgetStories.Expanded} meta={WidgetStories} sourceState="none" withToolbar={false} story={{ autoplay: false }} />
+
+The example is live. Collapse the controls, pause the mission, then resume it. Mission state changes the available controls while preserving the countdown. Open the story’s Actions panel to inspect UI intent callbacks.
+
+<div className="widget-docs-links">
+  <a href="/?path=/story/components-autonomywidget--expanded" target="_top">Explore the widget</a>
+  <a href="/?path=/docs/overview-architecture--docs" target="_top">Understand the architecture</a>
+  <a href="/?path=/docs/overview-design-system--docs" target="_top">Explore the design system</a>
+</div>
+
+## Review the experience
+
+A short walkthrough connects the product decisions to their implementation. Open each example in Canvas to use its Controls and Interactions panels.
+
+<div className="widget-docs-table" role="region" aria-label="Demo walkthrough" tabIndex={0}>
+<table>
+  <thead><tr><th>Example</th><th>What to inspect</th></tr></thead>
+  <tbody>
+    <tr><td><a href="/?path=/story/components-autonomywidget--default" target="_top">Waypoint mission</a></td><td>One status line and a countdown. Pause switches the primary control to Resume without restarting time.</td></tr>
+    <tr><td><a href="/?path=/story/components-autonomywidget--expanded" target="_top">Expanded controls</a></td><td>Waypoint actions appear beneath the status. Pausing replaces them with Exit Mission; resuming restores them.</td></tr>
+    <tr><td><a href="/?path=/story/components-autonomywidget--compact" target="_top">Compact viewport</a></td><td>A repeatable 390px stage retains time and pause/resume while secondary controls leave keyboard navigation immediately and finish a short visual exit.</td></tr>
+    <tr><td><a href="/?path=/story/components-autonomywidget--orbit-mode" target="_top">Orbit mode</a></td><td>A fixed center reference and a movable progress indicator. The carets adjust progress in 5% steps.</td></tr>
+    <tr><td><a href="/?path=/story/components-autonomywidget--orbit-interaction" target="_top">Orbit interaction</a></td><td>The play function reaches the upper limit, then clicks left four times to return to 80%. Follow the steps in Interactions.</td></tr>
+    <tr><td><a href="/?path=/story/components-timer--completion" target="_top">Timer completion</a></td><td>A one-second countdown and an assertion that the completion callback fires.</td></tr>
+  </tbody>
+</table>
+</div>
+
+## Keep attention on the mission
+
+The widget gives status and mission control a consistent home. Configuration selects the label, timer icon, and available actions; it does not add a different layout for every mission.
+
+**Collapse for monitoring.** On a fine pointer at desktop widths, the resting widget is 240 × 48px. The expanded state is 88px tall and is available when the mission has additional controls.
+
+**Expand for intervention.** The second row belongs to the current mission: waypoint actions, an orbit control, or an exit action while paused. The primary pause/resume control stays in the same position.
+
+**Adapt to the viewport.** Below 600px, the compact surface prioritizes the timer and pause/resume control and removes the secondary row from the tab order. Coarse-pointer controls use 44px targets and a 60px first row. The breakpoint follows the browser viewport, not the parent container. Open Compact or resize Canvas to inspect this transition.
+
+## The orbit reference stays put
+
+<Canvas of={WidgetStories.OrbitMode} meta={WidgetStories} sourceState="none" withToolbar={false} story={{ autoplay: false }} />
+
+The small blue marker stays at the center. The larger outlined indicator shows the current progress. Left and right carets move that indicator; they disable at the configured limits. This control is operated through buttons, not by dragging the track.
+
+Orbit Mode is the manual example. Orbit Interaction runs the automated sequence, so an automatic test does not move the indicator when you open the manual story.
+
+## What the demo proves
+
+The examples exercise rendering, state ownership, command-intent callbacks, keyboard activation, named controls, tooltips, and timer behavior. Mission values and durations are demonstration data. The application supplies transport and command acknowledgment; no drone connection is represented.
+
+The repository makes the boundary between UI behavior and the application’s command lifecycle explicit. See <a href="/?path=/docs/engineering-integration--docs" target="_top">Integration</a> for the state contract and current boundaries, or <a href="/?path=/docs/engineering-verification--docs" target="_top">Verification</a> for the test layers and how to reproduce the results.
+
+For the shared visual vocabulary, open <a href="/?path=/docs/foundation-tokens--docs" target="_top">Tokens</a>. Its reference resolves the surface, action, focus, motion, and geometry values from the same stylesheet used here.
