@@ -1,222 +1,147 @@
-import React, { useEffect, useState, useRef } from 'react'
-import { useTimer } from 'hooks'
-import { formatTime } from 'utils'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Tooltip } from 'components'
-import { RouteIcon } from 'icons'
+import { useEffect, useRef, useState } from 'react'
+import type { ComponentType, CSSProperties } from 'react'
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
+import { useTimer } from '../../hooks/useTimer'
+import { useMotionTokens } from '../../hooks/useMotionTokens'
+import { formatTime } from '../../utils/time'
+import { Tooltip } from '../Tooltip/Tooltip'
+import { useTooltipInteraction } from '../Tooltip/useTooltipInteraction'
+import { RouteIcon } from '../../assets/icons'
 
-/**
- * Props for the Timer component.
- * @property duration - Total duration in seconds
- * @property progress - Optional override for progress (0-1)
- * @property state - Timer state ('running' or 'paused')
- * @property icon - React component for the timer icon (defaults to RouteIcon)
- * @property tooltip - Tooltip text for compact mode
- * @property onComplete - Callback when timer completes
- */
+/** Countdown input and presentation options. */
 export interface TimerProps {
+  /** Duration in whole seconds, bounded to 0–3,599. Changing the effective duration resets it. */
   duration: number
+  /** Ring override from 0 (empty) to 1 (full); does not change countdown text. */
   progress?: number
+  /** Show the icon immediately, including while paused or complete. @defaultValue false */
+  condensed?: boolean
+  /** Pause preserves remaining time. @defaultValue 'running' */
   state?: 'running' | 'paused'
-  icon?: React.ComponentType<{
-    width?: number
-    height?: number
-    className?: string
-  }>
+  /** Mission icon component. @defaultValue RouteIcon */
+  icon?: ComponentType<{ width?: number; height?: number; className?: string }>
+  /** Help shown on hover or keyboard focus; Escape dismisses it. */
   tooltip?: string
+  /** Called once when a positive running countdown reaches zero. */
   onComplete?: () => void
 }
 
 /**
- * Timer is a UI component for displaying a countdown or progress timer.
- *
- * @param {TimerProps} props - The properties for configuring the timer.
- * @returns {JSX.Element} The rendered timer component.
+ * Displays a local countdown and a mission icon in a fixed 32px ring.
  *
  * @remarks
- * - Supports running and paused states.
- * - Triggers onComplete callback when done.
- * - Used for mission or task timing in autonomy UIs.
+ * Text is shown for the first six seconds of an active run, then replaced by
+ * the icon. Pause and completion restore text unless `condensed` is set.
+ * Reduced motion removes all animated transitions, including opacity fades.
  */
-export const Timer: React.FC<TimerProps> = ({
+export const Timer = ({
   duration,
   progress: progressOverride,
+  condensed = false,
   state = 'running',
   icon: IconComponent = RouteIcon,
   tooltip,
   onComplete,
-}) => {
-  const { remaining, progress } = useTimer({
-    duration: Math.max(0, duration),
-    state,
-    onComplete,
-    progressOverride,
-  })
+}: TimerProps) => {
+  const { remaining, progress } = useTimer({ duration, state, onComplete, progressOverride })
+  const reducedMotion = useReducedMotion()
+  const motionTiming = useMotionTokens()
+  const isRunning = state === 'running' && remaining > 0
+  const iconMode = `${duration}:${state}:${condensed}:${isRunning}`
+  const [revealed, setRevealed] = useState({ mode: iconMode, visible: false })
+  if (revealed.mode !== iconMode) setRevealed({ mode: iconMode, visible: false })
+  const showIcon = revealed.mode === iconMode && revealed.visible
 
+  useEffect(() => {
+    if (condensed || !isRunning) return
+    const timeout = setTimeout(() => setRevealed({ mode: iconMode, visible: true }), 6000)
+    return () => clearTimeout(timeout)
+  }, [iconMode, condensed, isRunning])
+
+  const display = formatTime(remaining)
+  const iconVisible = condensed || (isRunning && showIcon)
+  const animateContent = !reducedMotion && isRunning && !condensed
   const size = 32
   const strokeWidth = 2
   const radius = (size - strokeWidth) / 2
   const circumference = 2 * Math.PI * radius
-  const progressOffset =
-    circumference * (1 - Math.max(0, Math.min(1, progress)))
-
-  // Feature flag: set to true to enable yellow/red ring logic
-  const ENABLE_RING_WARNINGS = false
-
-  // Current logic: only gray for paused, white otherwise
-  // --- Future logic: enable if client wants yellow/red warnings ---
-  const ringColor = ENABLE_RING_WARNINGS
-    ? state === 'paused'
-      ? '#666666'
-      : progress <= 0.1
-      ? '#ff3b30'
-      : progress <= 0.5
-      ? '#ffd600'
-      : '#fff'
-    : state === 'paused'
-    ? '#666666'
-    : '#fff'
-  const display = formatTime(remaining)
-  // Increase font size for 5+ char displays by 1px
-  const fontSize = display.length >= 5 ? 7.5 : display.length === 4 ? 3 : 13
-  const fontScale =
-    display.length >= 5 ? 0.25 : display.length === 4 ? 0.29 : 0.42
-
-  // Animation state: 'showTime', 'crossfade', 'showIcon'
-  const [phase, setPhase] = useState<'showTime' | 'crossfade' | 'showIcon'>(
-    'showTime'
-  )
-
-  const shouldForceTime = state === 'paused' || remaining <= 0
-
-  useEffect(() => {
-    let timeout: ReturnType<typeof setTimeout>
-    if (shouldForceTime) {
-      setPhase('showTime')
-      return () => {
-        if (timeout !== undefined) clearTimeout(timeout)
-      }
-    }
-
-    if (phase === 'showTime') {
-      timeout = setTimeout(() => setPhase('crossfade'), 6000)
-    } else if (phase === 'crossfade') {
-      timeout = setTimeout(() => {
-        setPhase('showIcon')
-      }, 200)
-    }
-
-    return () => {
-      if (timeout !== undefined) clearTimeout(timeout)
-    }
-  }, [phase, shouldForceTime])
+  const fontSize = display.length >= 5
+    ? 'var(--font-size-timer-long)'
+    : display.length === 4
+      ? 'var(--font-size-timer-medium)'
+      : 'var(--font-size-timer-short)'
+  const contentStyle: CSSProperties = { fontSize, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }
+  const content = iconVisible
+    ? <IconComponent width={16} height={16} className="text-content-primary" />
+    : display
 
   const timerElement = (
-    <div className="relative flex items-center justify-center w-8 h-8">
-      <svg
-        width={size}
-        height={size}
-        role="img"
-        aria-label={`Timer: ${display} remaining`}>
+    <div className="relative flex items-center justify-center w-8 h-8 shrink-0">
+      <svg width={size} height={size} role="img" aria-label={`Timer: ${display} remaining`}>
+        <circle cx={size / 2} cy={size / 2} r={radius} stroke="var(--color-timer-track)" strokeWidth={strokeWidth} fill="none" />
         <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          stroke="rgba(255,255,255,0.2)"
-          strokeWidth={strokeWidth}
-          fill="none"
-        />
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          stroke={ringColor}
-          strokeWidth={strokeWidth}
-          fill="none"
+          cx={size / 2} cy={size / 2} r={radius}
+          stroke={state === 'paused' ? 'var(--color-timer-paused)' : 'var(--color-content-primary)'}
+          strokeWidth={strokeWidth} fill="none"
           strokeDasharray={circumference}
-          strokeDashoffset={progressOffset}
-          strokeLinecap="butt"
+          strokeDashoffset={circumference * (1 - progress)}
           transform={`rotate(-90 ${size / 2} ${size / 2})`}
         />
       </svg>
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <AnimatePresence mode="sync">
-          {phase === 'showTime' && (
+        {!animateContent ? (
+          <span
+            key={iconVisible ? 'icon' : 'time'}
+            className="flex items-center justify-center font-sans font-semibold text-content-primary"
+            style={contentStyle}
+            role={iconVisible ? undefined : 'timer'}
+            aria-hidden={iconVisible || undefined}
+            aria-live={iconVisible ? undefined : 'off'}>
+            {content}
+          </span>
+        ) : (
+          <AnimatePresence initial={false} mode="sync">
             <motion.span
-              key="time"
-              initial={{ opacity: 0, y: 6 }}
+              key={iconVisible ? 'icon' : 'time'}
+              initial={{ opacity: 0, y: iconVisible ? 2 : -2 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{
-                opacity: { duration: 0.3, ease: 'easeInOut' },
-                y: { type: 'spring', stiffness: 200, damping: 28 },
-              }}
-              className="font-sans font-bold text-white text-center select-none absolute"
-              style={{
-                fontSize: `clamp(${fontSize}px, ${size * fontScale}px, 16px)`,
-                lineHeight: '10px',
-              }}
-              role="timer"
-              aria-live="polite">
-              {display}
+              exit={{ opacity: 0, y: iconVisible ? -2 : 2, transition: { duration: motionTiming.fast } }}
+              transition={{ duration: motionTiming.normal, ease: motionTiming.ease }}
+              className="absolute flex items-center justify-center font-sans font-semibold text-content-primary"
+              style={contentStyle}
+              role={iconVisible ? undefined : 'timer'}
+              aria-hidden={iconVisible || undefined}
+              aria-live={iconVisible ? undefined : 'off'}>
+              {content}
             </motion.span>
-          )}
-          {phase === 'showIcon' && (
-            <motion.span
-              key="icon"
-              initial={{ opacity: 0, scale: 0.3 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.3 }}
-              transition={{ duration: 0.3, ease: 'easeInOut' }}
-              className="flex items-center justify-center absolute"
-              style={{ width: 16, height: 16 }}
-              aria-hidden="true">
-              <IconComponent
-                width={16}
-                height={16}
-                className="text-white"
-              />
-            </motion.span>
-          )}
-        </AnimatePresence>
+          </AnimatePresence>
+        )}
       </div>
     </div>
   )
 
-  const timerRef = useRef<HTMLDivElement>(null)
-  const [showTooltip, setShowTooltip] = useState(false)
-  const [targetRect, setTargetRect] = useState<DOMRect | null>(null)
+  const triggerRef = useRef<HTMLDivElement>(null)
+  const { tooltipId, isOpen, targetRect, dismiss, triggerProps, tooltipProps } = useTooltipInteraction({
+    triggerRef,
+    enabled: Boolean(tooltip),
+  })
 
-  const handleMouseEnter = () => {
-    if (tooltip && timerRef.current) {
-      setTargetRect(timerRef.current.getBoundingClientRect())
-      setShowTooltip(true)
-    }
-  }
+  if (!tooltip) return timerElement
 
-  const handleMouseLeave = () => {
-    setShowTooltip(false)
-  }
-
-  // Return with tooltip wrapper if tooltip provided
-  if (tooltip) {
-    return (
-      <>
-        <div
-          ref={timerRef}
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}>
-          {timerElement}
-        </div>
-        <Tooltip
-          targetRect={targetRect}
-          visible={showTooltip}
-          className="z-50">
-          {tooltip}
-        </Tooltip>
-      </>
-    )
-  }
-
-  return timerElement
+  return (
+    <>
+      <div
+        ref={triggerRef}
+        tabIndex={0}
+        aria-describedby={isOpen ? tooltipId : undefined}
+        className="widget-timer-trigger inline-flex items-center justify-center shrink-0"
+        style={{ width: 'var(--control-size)', height: 'var(--control-size)', borderRadius: 'var(--radius-button)' }}
+        {...triggerProps}>
+        {timerElement}
+      </div>
+      <Tooltip id={tooltipId} anchorRef={triggerRef} targetRect={targetRect} visible={isOpen} onDismiss={dismiss} {...tooltipProps}>
+        {tooltip}
+      </Tooltip>
+    </>
+  )
 }
