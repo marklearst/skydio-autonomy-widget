@@ -36,7 +36,9 @@ lerna-debug.log*
 
 # Test coverage
 coverage/
+coverage-all-tests/
 .nyc_output/
+.vitest/
 
 # Misc
 .env
