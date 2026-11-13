@@ -1,103 +1,133 @@
-import React, { useState, useEffect } from 'react'
+import { forwardRef, useCallback, useEffect, useId, useRef, useState } from 'react'
+import type { HTMLAttributes } from 'react'
+import { animate, motion, useMotionValue, useReducedMotion, useTransform } from 'framer-motion'
 import { Icons } from '../../assets/icons'
+import { useMotionTokens } from '../../hooks/useMotionTokens'
 
 const { ChevronsLeftIcon, ChevronsRightIcon } = Icons
+const finiteOr = (value: number, fallback: number) => Number.isFinite(value) ? value : fallback
+const percent = (value: number) => Math.min(100, Math.max(0, value))
 
-interface OrbitSliderProps {
-  /** Minimum progress (0-100) */
+/** A button-operated orbit progress control. The track is a display, not a draggable slider. */
+export interface OrbitSliderProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange' | 'defaultValue'> {
+  /** Lower progress limit, normalized to 0–100. @defaultValue 0 */
   min?: number
-  /** Maximum progress (0-100) */
+  /** Upper progress limit, normalized to 0–100. @defaultValue 100 */
   max?: number
-  /** Step size for adjustments */
+  /** Positive adjustment size. @defaultValue 1 */
   step?: number
-  /** Callback when progress changes */
-  onChange?: (value: number) => void
-  /** Whether the slider is disabled */
-  disabled?: boolean
-  /** Orbit progress (0-100) - how far through the orbit */
+  /** Controlled progress percentage. Pair with `onChange`. */
+  value?: number
+  /** Initial progress for an uncontrolled instance. @defaultValue 50 */
+  defaultValue?: number
+  /** Legacy input: initializes and resynchronizes an uncontrolled instance. Prefer `value` for controlled use. */
   progress?: number
+  /** Receives the next bounded percentage after an enabled caret is activated. */
+  onChange?: (value: number) => void
+  /** Prevent both adjustments. @defaultValue false */
+  disabled?: boolean
 }
 
-export const OrbitSlider: React.FC<OrbitSliderProps> = ({
+export const OrbitSlider = forwardRef<HTMLDivElement, OrbitSliderProps>(function OrbitSlider({
   min = 0,
   max = 100,
   step = 1,
+  value,
+  defaultValue,
+  progress,
   onChange,
   disabled = false,
-  progress = 50, // Default to 50% through orbit
-}) => {
-  const [internalProgress, setInternalProgress] = useState(progress)
+  className = '',
+  'aria-label': ariaLabel = 'Orbit progress controls',
+  ...props
+}, ref) {
+  const normalizedMin = percent(finiteOr(min, 0))
+  const normalizedMax = percent(finiteOr(max, 100))
+  const lower = Math.min(normalizedMin, normalizedMax)
+  const upper = Math.max(normalizedMin, normalizedMax)
+  const increment = Number.isFinite(step) && step > 0 ? step : 1
+  const clamp = useCallback((next: number) =>
+    Math.min(upper, Math.max(lower, finiteOr(next, 50))), [lower, upper])
+  const [internalProgress, setInternalProgress] = useState(() => clamp(defaultValue ?? progress ?? 50))
+  const descriptionId = useId()
+  const reducedMotion = useReducedMotion()
+  const timing = useMotionTokens()
+  const requested = useRef<{ value: number; immediate: boolean } | null>(null)
 
-  // Sync internal state with prop changes (for Storybook controls)
   useEffect(() => {
-    setInternalProgress(progress)
-  }, [progress])
+    if (value === undefined) {
+      if (progress !== undefined) setInternalProgress(clamp(progress))
+      else setInternalProgress(previous => clamp(previous))
+    }
+  }, [clamp, progress, value])
 
-  // Orbit progress position (big blue circle)
-  const progressPercentage = Math.min(100, Math.max(0, internalProgress))
+  const current = clamp(value ?? internalProgress)
+  const visualProgress = useMotionValue(current)
+  const thumbPosition = useTransform(visualProgress, next => `${next}%`)
+  const fillScale = useTransform(visualProgress, next => (next - 50) / 100)
 
-  const decreaseProgress = () => {
-    const newValue = Math.max(min, internalProgress - step)
-    setInternalProgress(newValue)
-    onChange?.(newValue)
-  }
+  useEffect(() => {
+    const immediate = requested.current?.value === current && requested.current.immediate
+    requested.current = null
+    if (reducedMotion || immediate || !timing.feedback) {
+      visualProgress.jump(current)
+      return
+    }
+    const animation = animate(visualProgress, current, { type: 'spring', duration: timing.feedback, bounce: 0 })
+    return () => animation.stop()
+  }, [current, reducedMotion, timing.feedback, visualProgress])
 
-  const increaseProgress = () => {
-    const newValue = Math.min(max, internalProgress + step)
-    setInternalProgress(newValue)
-    onChange?.(newValue)
+  const update = (next: number, immediate: boolean) => {
+    const bounded = clamp(next)
+    if (bounded === current) return
+    requested.current = { value: bounded, immediate }
+    if (value === undefined) setInternalProgress(bounded)
+    onChange?.(bounded)
   }
 
   return (
-    <div className="w-full">
-      {/* Exact Figma structure: flex flex-row gap-3 items-center */}
+    <div {...props} ref={ref} role="group" aria-label={ariaLabel} className={`w-full ${className}`}>
+      <output id={descriptionId} className="sr-only" aria-live="polite">{current}% orbit progress</output>
       <div className="flex flex-row gap-3 items-center justify-center">
-        {/* Left chevrons - size-4 (16px) */}
         <button
-          onClick={decreaseProgress}
-          disabled={disabled || internalProgress <= min}
-          className="relative shrink-0 size-4 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
-          aria-label="Decrease orbit progress">
-          <ChevronsLeftIcon className="size-full text-white" />
+          type="button"
+          onClick={event => update(current - increment, event.detail === 0)}
+          disabled={disabled || current <= lower}
+          className="orbit-control shrink-0 flex items-center justify-center"
+          aria-label="Decrease orbit progress"
+          aria-describedby={descriptionId}>
+          <ChevronsLeftIcon width={16} height={16} aria-hidden="true" />
         </button>
 
-        {/* Track container - basis-0 grow h-8 */}
-        <div className="basis-0 grow h-8 min-h-px min-w-px relative shrink-0">
-          {/* Background track - h-1 bg-[#4d4d4d] rounded-[5px] */}
-          <div className="absolute bg-[#4d4d4d] h-1 left-0 right-0 rounded-[5px] top-1/2 translate-y-[-50%]" />
-
-          {/* Progress line - connects reference point to drone position */}
-          <div
-            className="absolute h-1 bg-[#0077ee] rounded-[5px] top-1/2 translate-y-[-50%]"
-            style={{
-              left: progressPercentage >= 50 ? '50%' : `${progressPercentage}%`,
-              width: `${Math.abs(progressPercentage - 50)}%`,
-            }}
+        <div
+          role="meter"
+          aria-label="Orbit progress"
+          aria-valuemin={lower}
+          aria-valuemax={upper}
+          aria-valuenow={current}
+          aria-valuetext={`${current}%`}
+          className="basis-0 grow h-8 min-w-0 relative">
+          <div className="absolute bg-border-control h-1 inset-x-0 rounded-full top-1/2 -translate-y-1/2" />
+          <motion.div
+            className="absolute h-1 bg-orbit-progress rounded-full top-1/2 -translate-y-1/2"
+            style={{ left: '50%', width: '100%', scaleX: fillScale, originX: 0 }}
           />
-
-          {/* Blue circle - orbit reference point (center/start) */}
-          <div
-            className="absolute size-3 top-1/2 translate-x-[-50%] translate-y-[-50%] z-10"
-            style={{ left: '50%' }}>
-            <div className="w-full h-full bg-[#0077ee] rounded-full" />
-          </div>
-
-          {/* Drone position indicator - current location in orbit */}
-          <div
-            className="absolute shadow-[0px_4px_10px_0px_rgba(0,0,0,0.2)] size-6 top-1/2 translate-x-[-50%] translate-y-[-50%] bg-[#1A1A1A] rounded-full border-4 border-[#0077ee] pointer-events-none z-10"
-            style={{ left: `${progressPercentage}%` }}
-          />
+          <div className="absolute size-3 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-orbit-progress rounded-full" />
+          <motion.div className="orbit-indicator absolute inset-x-0 top-1/2 pointer-events-none" style={{ x: thumbPosition }}>
+            <div className="absolute size-6 -translate-x-1/2 -translate-y-1/2 bg-surface rounded-full border-4 border-orbit-progress" />
+          </motion.div>
         </div>
 
-        {/* Right chevrons - size-4 (16px) */}
         <button
-          onClick={increaseProgress}
-          disabled={disabled || internalProgress >= max}
-          className="relative shrink-0 size-4 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
-          aria-label="Increase orbit progress">
-          <ChevronsRightIcon className="size-full text-white" />
+          type="button"
+          onClick={event => update(current + increment, event.detail === 0)}
+          disabled={disabled || current >= upper}
+          className="orbit-control shrink-0 flex items-center justify-center"
+          aria-label="Increase orbit progress"
+          aria-describedby={descriptionId}>
+          <ChevronsRightIcon width={16} height={16} aria-hidden="true" />
         </button>
       </div>
     </div>
   )
-}
+})

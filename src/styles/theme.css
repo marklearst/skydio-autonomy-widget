@@ -172,6 +172,7 @@
 }
 
 .widget-button:focus-visible,
+.orbit-control:focus-visible,
 .widget-timer-trigger:focus-visible {
   outline: 2px solid var(--color-focus-ring);
   outline-offset: 2px;
@@ -208,6 +209,30 @@
   z-index: var(--layer-tooltip);
 }
 
+.orbit-control {
+  width: var(--control-size);
+  height: var(--control-size);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  border-radius: var(--radius-button);
+  color: var(--color-content-primary);
+}
+
+.orbit-control:active:not(:disabled) {
+  background: var(--color-surface-pressed);
+}
+
+.orbit-control:disabled {
+  opacity: 0.55;
+  color: var(--color-content-disabled);
+  cursor: not-allowed;
+}
+
 .sb-show-main,
 .docs-story {
   background: var(--color-surface);
@@ -219,7 +244,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .widget-button,
-  .widget-tooltip {
+  .widget-tooltip,
+  .orbit-control {
     animation: none;
     transition: none;
   }

@@ -23,7 +23,7 @@ export const StatusMessage: React.FC<StatusMessageProps> = ({
   className = '',
 }) => (
   <div
-    className={`text-white font-sans font-semibold text-[13px] leading-5 overflow-hidden whitespace-nowrap ${className}`}
+    className={`text-content-primary font-sans font-semibold text-status leading-5 overflow-hidden whitespace-nowrap ${className}`}
     role="status"
     aria-live="polite">
     {message}
