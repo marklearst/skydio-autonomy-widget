@@ -1,50 +1,87 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 @theme {
-  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif,
-    'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-  /* === BUTTON COLORS === */
-  /* Hover border */
+  --font-sans:
+    "Inter", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+
+  /* Primitive palette. Component styles consume the semantic aliases below. */
   --color-gray-600: #666;
-  /* Default border, hover background */
   --color-gray-700: #4d4d4d;
-  /* Default background, clicked border, disabled border */
   --color-gray-800: #333;
-  /* Clicked background, disabled background */
   --color-gray-900: #1a1a1a;
-  /* Disabled text */
-  --color-text-tertiary: #808080;
-  /* Primary blue for play/resume buttons */
-  --color-primary-blue: #06c;
-  /* Primary red for stop/danger buttons */
+  --color-primary-blue: #0066cc;
   --color-primary-red: #ae1e26;
+  --color-text-tertiary: #808080;
 
-  /* === BUTTON SHADOWS === */
-  /* Default button shadow */
-  --shadow-overlay-100: 0 1px 4px 0 rgba(0, 0, 0, 0.13);
-  /* Hover button shadow */
-  --shadow-overlay-200: 0 4px 10px 0 rgba(0, 0, 0, 0.2);
+  --color-surface: var(--color-gray-900);
+  --color-surface-raised: var(--color-gray-800);
+  --color-surface-hover: var(--color-gray-700);
+  --color-surface-pressed: var(--color-gray-900);
+  --color-content-primary: #fff;
+  --color-content-secondary: #b8b8b8;
+  --color-content-disabled: var(--color-text-tertiary);
+  --color-border-subtle: rgb(255 255 255 / 0.1);
+  --color-border-control: var(--color-gray-700);
+  --color-border-hover: var(--color-gray-600);
+  --color-focus-ring: var(--color-content-primary);
+  --color-action-resume: var(--color-primary-blue);
+  --color-action-resume-hover: #005bb5;
+  --color-action-pause: var(--color-primary-red);
+  --color-action-pause-hover: #941920;
+  --color-orbit-progress: #0077ee;
+  --color-timer-track: rgb(255 255 255 / 0.2);
+  --color-timer-paused: var(--color-gray-600);
+  --color-tooltip-surface: #111;
 
-  /* === BUTTON RADIUS === */
-  /* Border radius for all buttons */
+  --shadow-overlay-100: 0 1px 4px 0 rgb(0 0 0 / 0.13);
+  --shadow-overlay-200: 0 4px 10px 0 rgb(0 0 0 / 0.2);
+  --text-status: 13px;
+  --text-control: 14px;
+  --text-tooltip: 12px;
   --radius-button: 2px;
-
-  /* === CONTROL LAYOUT === */
-  /* Gap between action buttons */
-  --gap-action-button: 8px;
-  /* Fixed width for all buttons */
-  --width-button: 32px;
-  /* Fixed height for all buttons */
-  --height-button: 32px;
+  --radius-widget: 4px;
 }
 
-/* Reusable component-level utilities */
+:root {
+  color-scheme: dark;
+  --duration-fast: 120ms;
+  --duration-normal: 180ms;
+  --duration-layout: 240ms;
+  --duration-feedback: 180ms;
+  --ease-out-ui: cubic-bezier(0.32, 0.72, 0, 1);
+  --layer-tooltip: 30;
+  --font-size-timer-short: 13px;
+  --font-size-timer-medium: 10px;
+  --font-size-timer-long: 8px;
+  --control-size: 32px;
+  --gap-action-button: 8px;
+  --width-button: var(--control-size);
+  --height-button: var(--control-size);
+  --widget-width: 240px;
+  --widget-padding: 8px;
+  --widget-border-width: 1px;
+  --widget-height: 48px;
+  --widget-expanded-height: 88px;
+  --widget-compact-width: 88px;
+  --tooltip-gap: 14px;
+}
+
+@media (pointer: coarse) {
+  :root {
+    --control-size: 44px;
+    --widget-height: 60px;
+    --widget-expanded-height: 112px;
+    --widget-compact-width: 112px;
+  }
+}
+
 @utility control {
   @apply flex justify-between items-center self-stretch;
 }
 
 @utility actions-container {
-  @apply flex items-center gap-[var(--gap-action-button)] flex-[1_0_0];
+  @apply flex items-center gap-(--gap-action-button) flex-[1_0_0];
 }
 
 @utility btn {
@@ -78,11 +115,14 @@
   }
 }
 
+@layer components {
 .sb-show-main,
 .docs-story {
-  @apply !bg-[#333333];
+  background: var(--color-surface);
 }
 
 .autonomy-widget-base {
   @apply w-[240px] bg-[#1A1A1A] border border-[#262626] rounded-[4px] flex flex-col transition-all duration-200 overflow-hidden;
+}
+
 }
